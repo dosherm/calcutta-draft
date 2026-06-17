@@ -87,7 +87,10 @@ function sharpBadge(p) {
 // (ceiling), current Form, and a SHARP badge for players at/near their 365-day best.
 function playerMeta(p) {
   const overFlag = p.overMax ? ' <span class="over-flag">OVER 24!</span>' : "";
-  return `HI ${p.hi} (low ${p.lowHi}) &middot; Crs ${p.courseHcp}${overFlag} &middot; L10 ${p.l10} &middot; 2yr ${p.avg2yr} &middot; best ${p.best} &middot; ${formIcon(p.form)}${sharpBadge(p)}`;
+  const ly = p.lastYear != null
+    ? ` &middot; <span class="ly">LY ${p.lastYear}</span>`
+    : ' &middot; <span class="ly ly-dnp">LY n/a</span>';
+  return `HI ${p.hi} (low ${p.lowHi}) &middot; Crs ${p.courseHcp}${overFlag} &middot; L10 ${p.l10} &middot; 2yr ${p.avg2yr} &middot; best ${p.best}${ly} &middot; ${formIcon(p.form)}${sharpBadge(p)}`;
 }
 
 // ---- Setup: draft order ----

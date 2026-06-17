@@ -27,7 +27,8 @@
     "recent_avg": 4.96,
     "prior_avg": 4.24,
     "best_diff": -1.2,
-    "trend_delta": -0.7
+    "trend_delta": -0.7,
+    "last_year_event": null
   },
   {
     "ghin_id": "10189718",
@@ -57,7 +58,12 @@
     "recent_avg": 7.51,
     "prior_avg": 7.55,
     "best_diff": 0.4,
-    "trend_delta": 0.0
+    "trend_delta": 0.0,
+    "last_year_event": {
+      "diff": 8.5,
+      "gross": 80,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "10189494",
@@ -87,7 +93,8 @@
     "recent_avg": 8.48,
     "prior_avg": 7.87,
     "best_diff": 0.5,
-    "trend_delta": -0.6
+    "trend_delta": -0.6,
+    "last_year_event": null
   },
   {
     "ghin_id": "10189440",
@@ -117,7 +124,12 @@
     "recent_avg": 7.26,
     "prior_avg": 10.0,
     "best_diff": 1.6,
-    "trend_delta": 2.7
+    "trend_delta": 2.7,
+    "last_year_event": {
+      "diff": 12.1,
+      "gross": 84,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "10189677",
@@ -147,7 +159,12 @@
     "recent_avg": 10.7,
     "prior_avg": 7.5,
     "best_diff": 1.4,
-    "trend_delta": -3.2
+    "trend_delta": -3.2,
+    "last_year_event": {
+      "diff": 13.0,
+      "gross": 85,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "10189777",
@@ -177,7 +194,8 @@
     "recent_avg": 8.03,
     "prior_avg": 8.79,
     "best_diff": 1.4,
-    "trend_delta": 0.8
+    "trend_delta": 0.8,
+    "last_year_event": null
   },
   {
     "ghin_id": "10189513",
@@ -207,7 +225,12 @@
     "recent_avg": 8.88,
     "prior_avg": 8.79,
     "best_diff": 2.5,
-    "trend_delta": -0.1
+    "trend_delta": -0.1,
+    "last_year_event": {
+      "diff": 5.9,
+      "gross": 77,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "10189450",
@@ -237,7 +260,12 @@
     "recent_avg": 10.93,
     "prior_avg": 9.78,
     "best_diff": 3.2,
-    "trend_delta": -1.2
+    "trend_delta": -1.2,
+    "last_year_event": {
+      "diff": 15.7,
+      "gross": 88,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "10189587",
@@ -267,7 +295,8 @@
     "recent_avg": 12.96,
     "prior_avg": 13.47,
     "best_diff": 7.0,
-    "trend_delta": 0.5
+    "trend_delta": 0.5,
+    "last_year_event": null
   },
   {
     "ghin_id": "10649200",
@@ -297,7 +326,8 @@
     "recent_avg": 12.15,
     "prior_avg": 11.67,
     "best_diff": 5.9,
-    "trend_delta": -0.5
+    "trend_delta": -0.5,
+    "last_year_event": null
   },
   {
     "ghin_id": "11317201",
@@ -327,7 +357,12 @@
     "recent_avg": 13.18,
     "prior_avg": 12.79,
     "best_diff": 5.3,
-    "trend_delta": -0.4
+    "trend_delta": -0.4,
+    "last_year_event": {
+      "diff": 13.0,
+      "gross": 85,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "10829319",
@@ -357,7 +392,12 @@
     "recent_avg": 11.57,
     "prior_avg": 15.4,
     "best_diff": 1.4,
-    "trend_delta": 3.8
+    "trend_delta": 3.8,
+    "last_year_event": {
+      "diff": 20.1,
+      "gross": 93,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "10189740",
@@ -387,7 +427,12 @@
     "recent_avg": 14.52,
     "prior_avg": 12.97,
     "best_diff": 6.8,
-    "trend_delta": -1.5
+    "trend_delta": -1.5,
+    "last_year_event": {
+      "diff": 21.9,
+      "gross": 95,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "10189518",
@@ -417,7 +462,8 @@
     "recent_avg": 12.45,
     "prior_avg": 12.55,
     "best_diff": 5.7,
-    "trend_delta": 0.1
+    "trend_delta": 0.1,
+    "last_year_event": null
   },
   {
     "ghin_id": "10408672",
@@ -447,7 +493,12 @@
     "recent_avg": 14.19,
     "prior_avg": 13.27,
     "best_diff": 7.7,
-    "trend_delta": -0.9
+    "trend_delta": -0.9,
+    "last_year_event": {
+      "diff": 20.1,
+      "gross": 93,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "10189461",
@@ -477,7 +528,12 @@
     "recent_avg": 15.24,
     "prior_avg": 15.5,
     "best_diff": 3.1,
-    "trend_delta": 0.3
+    "trend_delta": 0.3,
+    "last_year_event": {
+      "diff": 14.6,
+      "gross": 43,
+      "holes": 9
+    }
   },
   {
     "ghin_id": "10877462",
@@ -507,7 +563,12 @@
     "recent_avg": 13.36,
     "prior_avg": 13.33,
     "best_diff": 5.9,
-    "trend_delta": -0.0
+    "trend_delta": -0.0,
+    "last_year_event": {
+      "diff": 10.3,
+      "gross": 82,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "10790865",
@@ -537,7 +598,12 @@
     "recent_avg": 14.1,
     "prior_avg": 14.46,
     "best_diff": 5.0,
-    "trend_delta": 0.4
+    "trend_delta": 0.4,
+    "last_year_event": {
+      "diff": 12.1,
+      "gross": 84,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "10026488",
@@ -567,7 +633,12 @@
     "recent_avg": 14.99,
     "prior_avg": 15.92,
     "best_diff": 5.0,
-    "trend_delta": 0.9
+    "trend_delta": 0.9,
+    "last_year_event": {
+      "diff": 20.1,
+      "gross": 93,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "10288717",
@@ -597,7 +668,12 @@
     "recent_avg": 14.36,
     "prior_avg": 13.95,
     "best_diff": 5.4,
-    "trend_delta": -0.4
+    "trend_delta": -0.4,
+    "last_year_event": {
+      "diff": 17.4,
+      "gross": 90,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "10189444",
@@ -627,7 +703,8 @@
     "recent_avg": 13.85,
     "prior_avg": 15.78,
     "best_diff": 7.7,
-    "trend_delta": 1.9
+    "trend_delta": 1.9,
+    "last_year_event": null
   },
   {
     "ghin_id": "12967632",
@@ -657,7 +734,8 @@
     "recent_avg": 14.83,
     "prior_avg": 16.86,
     "best_diff": 8.0,
-    "trend_delta": 2.0
+    "trend_delta": 2.0,
+    "last_year_event": null
   },
   {
     "ghin_id": "10193029",
@@ -687,7 +765,12 @@
     "recent_avg": 17.72,
     "prior_avg": 17.86,
     "best_diff": 9.2,
-    "trend_delta": 0.1
+    "trend_delta": 0.1,
+    "last_year_event": {
+      "diff": 15.7,
+      "gross": 88,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "10640059",
@@ -717,7 +800,12 @@
     "recent_avg": 17.87,
     "prior_avg": 16.88,
     "best_diff": 8.5,
-    "trend_delta": -1.0
+    "trend_delta": -1.0,
+    "last_year_event": {
+      "diff": 17.4,
+      "gross": 90,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "10189814",
@@ -747,7 +835,12 @@
     "recent_avg": 18.76,
     "prior_avg": 16.54,
     "best_diff": 10.4,
-    "trend_delta": -2.2
+    "trend_delta": -2.2,
+    "last_year_event": {
+      "diff": 16.5,
+      "gross": 89,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "10189705",
@@ -777,7 +870,12 @@
     "recent_avg": 18.97,
     "prior_avg": 17.18,
     "best_diff": 10.3,
-    "trend_delta": -1.8
+    "trend_delta": -1.8,
+    "last_year_event": {
+      "diff": 19.2,
+      "gross": 92,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "12209140",
@@ -807,7 +905,12 @@
     "recent_avg": 18.34,
     "prior_avg": 17.57,
     "best_diff": 11.2,
-    "trend_delta": -0.8
+    "trend_delta": -0.8,
+    "last_year_event": {
+      "diff": 21.9,
+      "gross": 95,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "10973792",
@@ -837,7 +940,8 @@
     "recent_avg": 22.05,
     "prior_avg": 22.84,
     "best_diff": 14.2,
-    "trend_delta": 0.8
+    "trend_delta": 0.8,
+    "last_year_event": null
   },
   {
     "ghin_id": "10193174",
@@ -867,7 +971,12 @@
     "recent_avg": 20.49,
     "prior_avg": 21.45,
     "best_diff": 12.5,
-    "trend_delta": 1.0
+    "trend_delta": 1.0,
+    "last_year_event": {
+      "diff": 27.2,
+      "gross": 101,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "10189614",
@@ -897,7 +1006,12 @@
     "recent_avg": 20.5,
     "prior_avg": 22.41,
     "best_diff": 13.9,
-    "trend_delta": 1.9
+    "trend_delta": 1.9,
+    "last_year_event": {
+      "diff": 22.8,
+      "gross": 96,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "10404325",
@@ -927,7 +1041,12 @@
     "recent_avg": 20.11,
     "prior_avg": 20.7,
     "best_diff": 14.6,
-    "trend_delta": 0.6
+    "trend_delta": 0.6,
+    "last_year_event": {
+      "diff": 23.7,
+      "gross": 97,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "10189743",
@@ -957,7 +1076,8 @@
     "recent_avg": 20.61,
     "prior_avg": 19.84,
     "best_diff": 15.4,
-    "trend_delta": -0.8
+    "trend_delta": -0.8,
+    "last_year_event": null
   },
   {
     "ghin_id": "11317199",
@@ -987,7 +1107,12 @@
     "recent_avg": 22.56,
     "prior_avg": 21.25,
     "best_diff": 11.3,
-    "trend_delta": -1.3
+    "trend_delta": -1.3,
+    "last_year_event": {
+      "diff": 24.6,
+      "gross": 98,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "10189571",
@@ -1017,7 +1142,12 @@
     "recent_avg": 23.05,
     "prior_avg": 22.38,
     "best_diff": 13.0,
-    "trend_delta": -0.7
+    "trend_delta": -0.7,
+    "last_year_event": {
+      "diff": 18.3,
+      "gross": 91,
+      "holes": 18
+    }
   },
   {
     "ghin_id": "11421954",
@@ -1047,7 +1177,8 @@
     "recent_avg": 23.56,
     "prior_avg": 24.25,
     "best_diff": 16.5,
-    "trend_delta": 0.7
+    "trend_delta": 0.7,
+    "last_year_event": null
   },
   {
     "ghin_id": "11003874",
@@ -1077,6 +1208,11 @@
     "recent_avg": 26.27,
     "prior_avg": 26.61,
     "best_diff": 17.4,
-    "trend_delta": 0.3
+    "trend_delta": 0.3,
+    "last_year_event": {
+      "diff": 28.1,
+      "gross": 102,
+      "holes": 18
+    }
   }
 ]

@@ -32,7 +32,8 @@ class PDF(FPDF):
         self.set_text_color(150, 150, 150)
         self.cell(0, 5,
                   "HI = current Index; Low = 365-day low. L10 / 2yr = avg 18-hole-equiv differential (last 10 rounds / 2 years). "
-                  "Best = lowest 2yr differential (ceiling). Crs = White tees Youche CC (70.4/127/71). * SHARP = at season low.",
+                  "Best = lowest 2yr differential (ceiling). LY '25 = differential at this same event on 2025-06-21 ('-' = did not play). "
+                  "Crs = White tees Youche CC (70.4/127/71). * SHARP = at season low.",
                   align="C", new_x="LMARGIN", new_y="NEXT")
         self.cell(0, 5, f"Page {self.page_no()}", align="C")
 
@@ -54,8 +55,8 @@ class PDF(FPDF):
         self.set_font("Helvetica", "B", 9)
         self.set_line_width(0.2)
         self.set_draw_color(200, 200, 200)
-        col_w = [50, 16, 16, 20, 18, 18, 16, 34]
-        labels = ["Player", "HI", "Low", "Crs", "L10", "2yr", "Best", "Form"]
+        col_w = [44, 14, 14, 16, 15, 15, 14, 16, 32]
+        labels = ["Player", "HI", "Low", "Crs", "L10", "2yr", "Best", "LY '25", "Form"]
         for lbl, w in zip(labels, col_w):
             self.cell(w, 7, lbl, border="B", fill=True, align="C" if lbl != "Player" else "L")
         self.ln()
@@ -110,6 +111,12 @@ class PDF(FPDF):
             self.set_text_color(120, 90, 30)
             self.cell(col_w[6], 9, str(p.get("best_diff", "")), border="B", fill=fill, align="C")
 
+            # Last year's same event (2025-06-21) differential
+            ly = p.get("last_year_event")
+            self.set_font("Helvetica", "B", 9.5)
+            self.set_text_color(26, 46, 74)
+            self.cell(col_w[7], 9, str(ly["diff"]) if ly else "-", border="B", fill=fill, align="C")
+
             # Form (from 2yr recent-vs-prior trend)
             form = p.get("form", "Stable")
             if form == "Improving":
@@ -119,7 +126,7 @@ class PDF(FPDF):
             else:
                 self.set_text_color(80, 80, 80)
             self.set_font("Helvetica", "B", 8.5)
-            self.cell(col_w[7], 9, FORM_LABEL.get(form, form), border="B", fill=fill, align="C")
+            self.cell(col_w[8], 9, FORM_LABEL.get(form, form), border="B", fill=fill, align="C")
             self.ln()
 
         self.set_text_color(20, 20, 20)
