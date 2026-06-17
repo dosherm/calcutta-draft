@@ -334,3 +334,53 @@ main {
 }
 .ord-btn:active { background: #e4e7ec; }
 .ord-btn:disabled { opacity: 0.3; }
+
+/* ---- Draft override + undo ---- */
+
+.override-flag {
+  margin-top: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #b1342a;
+}
+
+.override-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+.override-bar label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.override-bar select {
+  flex: 1;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: #fff;
+  color: var(--text);
+}
+
+.undo-btn {
+  display: block;
+  width: 100%;
+  padding: 11px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--navy);
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+.undo-btn:active { background: #eef0f3; }

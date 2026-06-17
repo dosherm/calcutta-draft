@@ -1,7 +1,7 @@
 // Youche CC Calcutta — live draft tracker
 // Single-device, localStorage-persisted. PLAYERS comes from data.js.
 
-const STORAGE_KEY = "calcutta-draft-state-v3";
+const STORAGE_KEY = "calcutta-draft-state-v4";
 
 const flightA = PLAYERS.filter(p => p.flight === "A").sort((a, b) => b.hcp - a.hcp);
 const flightB = PLAYERS.filter(p => p.flight === "B");
@@ -25,9 +25,35 @@ function loadState() {
   return {
     orderSet: false,
     order: flightA.map(a => a.name), // default seed; user can shuffle/reorder
-    pickIndex: 0,
     teams: Object.fromEntries(flightA.map(a => [a.name, { a: a.name, b: null, c: null }])),
+    history: [],          // [{captain, slot, player}] in pick sequence, for Undo
+    override: null,       // captain name to force on the clock, else auto
   };
+}
+
+function picksMade(captainName) {
+  const t = state.teams[captainName];
+  return (t.b ? 1 : 0) + (t.c ? 1 : 0);
+}
+
+// A position in the snake sequence is "done" when that captain has made the
+// pick that position represents: round-1 positions need >=1 pick, round-2 need 2.
+function currentPickIndex() {
+  const seq = getPickOrder();
+  const r1 = state.order.length;
+  for (let i = 0; i < seq.length; i++) {
+    const need = i < r1 ? 1 : 2;
+    if (picksMade(seq[i]) < need) return i;
+  }
+  return -1; // complete
+}
+
+// Captain currently on the clock: an active override (if still has a need),
+// otherwise the next captain in snake sequence.
+function currentCaptain() {
+  if (state.override && neededFlights(state.override).length) return state.override;
+  const idx = currentPickIndex();
+  return idx === -1 ? null : getPickOrder()[idx];
 }
 
 let state = loadState();
@@ -123,7 +149,23 @@ function makePick(captainName, playerName) {
   const player = findPlayer(playerName);
   const slot = player.flight.toLowerCase();
   state.teams[captainName][slot] = playerName;
-  state.pickIndex += 1;
+  state.history.push({ captain: captainName, slot, player: playerName });
+  state.override = null; // override is a one-time redirect; return to auto order
+  saveState();
+  render();
+}
+
+function undoLastPick() {
+  const last = state.history.pop();
+  if (!last) return;
+  state.teams[last.captain][last.slot] = null;
+  state.override = null;
+  saveState();
+  render();
+}
+
+function setOverride(captainName) {
+  state.override = captainName || null;
   saveState();
   render();
 }
@@ -145,38 +187,72 @@ function poolCards(flight, captainName) {
   return `<div class="section-label">Flight ${flight} available (best true talent first)</div>${rows}`;
 }
 
+function overrideControl(currentName) {
+  // Dropdown of captains who still have an open slot, plus an "auto" option.
+  const opts = state.order
+    .filter(name => neededFlights(name).length)
+    .map(name => {
+      const sel = name === currentName && state.override ? " selected" : "";
+      return `<option value="${name}"${sel}>${name}</option>`;
+    }).join("");
+  const autoSel = state.override ? "" : " selected";
+  return `
+    <div class="override-bar">
+      <label for="override-sel">On the clock:</label>
+      <select id="override-sel">
+        <option value=""${autoSel}>Auto (next in order)</option>
+        ${opts}
+      </select>
+    </div>`;
+}
+
 function renderDraft() {
   if (!state.orderSet) return renderSetup();
 
-  const pickOrder = getPickOrder();
-  const total = pickOrder.length;
+  const total = getPickOrder().length;
   const round1Len = state.order.length;
+  const picksDone = state.history.length;
+  const idx = currentPickIndex();
+  const captainName = currentCaptain();
 
-  if (state.pickIndex >= total) {
+  const undoBtn = state.history.length
+    ? `<button id="undo-btn" class="undo-btn">&#8630; Undo last pick (${state.history[state.history.length - 1].player})</button>`
+    : "";
+
+  if (!captainName) {
     return `<div class="draft-complete">
       <h2>Draft Complete</h2>
       <p>All ${round1Len} teams are set. Check the Teams tab for the full rosters.</p>
-    </div>`;
+    </div>${undoBtn}`;
   }
 
-  const captainName = pickOrder[state.pickIndex];
   const captain = findPlayer(captainName);
-  const round = state.pickIndex < round1Len ? 1 : 2;
+  // Round label: if overridden, infer from how many picks this captain has.
+  const round = state.override
+    ? (picksMade(captainName) === 0 ? 1 : 2)
+    : (idx < round1Len ? 1 : 2);
   const needed = neededFlights(captainName);
 
   const choiceText = needed.length === 2
     ? "picking a Flight B or C partner (their choice)"
     : `must pick a Flight ${needed[0]} partner`;
 
+  const overrideNote = state.override
+    ? '<div class="override-flag">&#9888; Manual override active</div>'
+    : "";
+
   const sections = needed.map(f => poolCards(f, captainName)).join("");
 
   return `
     <div class="draft-status">
-      <div class="pick-label">Pick ${state.pickIndex + 1} of ${total}</div>
+      <div class="pick-label">${picksDone} of ${total} picks made</div>
       <div class="on-clock">${captain.name}</div>
       <div class="on-clock-sub">Flight A captain &middot; HCP ${captain.hcp} &middot; ${choiceText}</div>
       <span class="round-pill">Round ${round}</span>
+      ${overrideNote}
     </div>
+    ${overrideControl(captainName)}
+    ${undoBtn}
     ${sections || "<p>No players left to draft.</p>"}
   `;
 }
@@ -233,6 +309,12 @@ function render() {
   document.querySelectorAll(".pick-btn").forEach(btn => {
     btn.addEventListener("click", () => makePick(btn.dataset.captain, btn.dataset.player));
   });
+
+  const overrideSel = document.getElementById("override-sel");
+  if (overrideSel) overrideSel.addEventListener("change", e => setOverride(e.target.value));
+
+  const undoBtn = document.getElementById("undo-btn");
+  if (undoBtn) undoBtn.addEventListener("click", undoLastPick);
 
   document.querySelectorAll(".ord-btn").forEach(btn => {
     btn.addEventListener("click", () => {
