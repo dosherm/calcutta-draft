@@ -171,6 +171,18 @@ main {
 }
 .pick-btn:active { opacity: 0.75; }
 
+.sharp-badge {
+  display: inline-block;
+  background: var(--gold);
+  color: #2a2106;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
 .trend-icon { font-size: 0.78rem; font-weight: 700; }
 .trend-improving { color: #157a42; }
 .trend-declining { color: #b1342a; }

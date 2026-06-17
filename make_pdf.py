@@ -5,7 +5,7 @@ from pathlib import Path
 OUTPUT  = Path(__file__).parent / "calcutta-player-guide.pdf"
 players = json.loads(Path("calcutta-players.json").read_text())
 
-TREND_LABEL = {"improving": "Improving  (+)", "declining": "Declining  (-)", "stable": "Stable"}
+FORM_LABEL = {"Improving": "Improving (+)", "Declining": "Declining (-)", "Stable": "Stable", "No data": "No data"}
 
 FLIGHT_META = {
     "A": {"title": "Flight A  -  Best Players", "r": 26,  "g": 74,  "b": 58,  "lr": 232, "lg": 245, "lb": 238},
@@ -31,9 +31,8 @@ class PDF(FPDF):
         self.set_font("Helvetica", "I", 8)
         self.set_text_color(150, 150, 150)
         self.cell(0, 5,
-                  "Avg Diff = avg handicap differential from last 20 validated 18-hole rounds. "
-                  "Course HCP = White tees, Youche CC (Rating 70.4 / Slope 127 / Par 71). "
-                  "Trend compares recent vs earlier rounds.",
+                  "HI = current Handicap Index; Low = 365-day low. L5 Avg = avg 18-hole-equiv differential, last 5 rounds. "
+                  "Course HCP = White tees, Youche CC (70.4 / 127 / 71). Form from index history. * SHARP = at season low.",
                   align="C", new_x="LMARGIN", new_y="NEXT")
         self.cell(0, 5, f"Page {self.page_no()}", align="C")
 
@@ -55,8 +54,8 @@ class PDF(FPDF):
         self.set_font("Helvetica", "B", 9)
         self.set_line_width(0.2)
         self.set_draw_color(200, 200, 200)
-        col_w = [66, 24, 28, 32, 34]
-        labels = ["Player", "HCP", "Course HCP", "Avg Diff", "Trend"]
+        col_w = [60, 20, 20, 24, 24, 38]
+        labels = ["Player", "HI", "Low", "Crs HCP", "L5 Avg", "Form"]
         for lbl, w in zip(labels, col_w):
             self.cell(w, 7, lbl, border="B", fill=True, align="C" if lbl != "Player" else "L")
         self.ln()
@@ -71,16 +70,21 @@ class PDF(FPDF):
                 self.set_fill_color(255, 255, 255)
             fill = True
 
-            # Name
+            # Name (with SHARP marker)
             self.set_text_color(20, 20, 20)
             self.set_font("Helvetica", "B", 10)
-            self.cell(col_w[0], 9, f"  {p['signup_name']}", border="B", fill=fill,
-                      align="L")
+            name = f"  {p['signup_name']}" + ("  *" if p.get("sharp") else "")
+            self.cell(col_w[0], 9, name, border="B", fill=fill, align="L")
 
-            # Handicap — colored
+            # Handicap Index — colored
             self.set_font("Helvetica", "B", 11)
             self.set_text_color(meta["r"], meta["g"], meta["b"])
             self.cell(col_w[1], 9, str(p["posted_hcp"]), border="B", fill=fill, align="C")
+
+            # 365-day low index
+            self.set_font("Helvetica", "", 10)
+            self.set_text_color(80, 80, 80)
+            self.cell(col_w[2], 9, str(p.get("low_hi", "")), border="B", fill=fill, align="C")
 
             # Course handicap — flagged red if over the 24 event max
             over = p.get("over_max", False)
@@ -91,28 +95,28 @@ class PDF(FPDF):
                 self.set_text_color(40, 40, 40)
             self.set_font("Helvetica", "B", 10)
             label = f"{p.get('course_handicap', '')}{'!' if over else ''}"
-            self.cell(col_w[2], 9, label, border="B", fill=True, align="C")
+            self.cell(col_w[3], 9, label, border="B", fill=True, align="C")
             # restore row fill for subsequent cells
             if i % 2 == 0:
                 self.set_fill_color(meta["lr"], meta["lg"], meta["lb"])
             else:
                 self.set_fill_color(255, 255, 255)
 
-            # Avg diff
+            # Recent-5 average (current scoring form)
             self.set_font("Helvetica", "", 10)
             self.set_text_color(80, 80, 80)
-            self.cell(col_w[3], 9, str(p["avg_differential"]), border="B", fill=fill, align="C")
+            self.cell(col_w[4], 9, str(p.get("recent5_avg", "")), border="B", fill=fill, align="C")
 
-            # Trend
-            trend = p.get("trend", "stable")
-            if trend == "improving":
+            # Form (from index history)
+            form = p.get("form", "Stable")
+            if form == "Improving":
                 self.set_text_color(20, 120, 60)
-            elif trend == "declining":
+            elif form == "Declining":
                 self.set_text_color(160, 30, 30)
             else:
                 self.set_text_color(80, 80, 80)
             self.set_font("Helvetica", "B", 9)
-            self.cell(col_w[4], 9, TREND_LABEL.get(trend, trend), border="B", fill=fill, align="C")
+            self.cell(col_w[5], 9, FORM_LABEL.get(form, form), border="B", fill=fill, align="C")
             self.ln()
 
         self.set_text_color(20, 20, 20)
@@ -133,8 +137,8 @@ class PDF(FPDF):
         self.set_text_color(100, 100, 100)
         self.set_x(10)
         self.cell(0, 5,
-                  "Trend key:   Improving (+) = recent rounds trending better   |   "
-                  "Stable = consistent   |   Declining (-) = recent rounds trending worse",
+                  "Form (from index history):  Improving (+) = index falling   |   Stable   |   Declining (-) = index rising."
+                  "    * SHARP = index at/near its 365-day low (peaking).",
                   align="C", new_x="LMARGIN", new_y="NEXT")
         self.ln(2)
         self.set_draw_color(200, 168, 76)

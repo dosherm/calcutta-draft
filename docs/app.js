@@ -3,7 +3,7 @@
 
 const STORAGE_KEY = "calcutta-draft-state-v4";
 
-const flightA = PLAYERS.filter(p => p.flight === "A").sort((a, b) => b.hcp - a.hcp);
+const flightA = PLAYERS.filter(p => p.flight === "A").sort((a, b) => b.hi - a.hi);
 const flightB = PLAYERS.filter(p => p.flight === "B");
 const flightC = PLAYERS.filter(p => p.flight === "C");
 
@@ -71,15 +71,23 @@ function isDrafted(name) {
   return Object.values(state.teams).some(t => t.b === name || t.c === name);
 }
 
-function trendIcon(trend) {
-  if (trend === "improving") return '<span class="trend-icon trend-improving">&#9650; Improving</span>';
-  if (trend === "declining") return '<span class="trend-icon trend-declining">&#9660; Declining</span>';
+function formIcon(form) {
+  if (form === "Improving") return '<span class="trend-icon trend-improving">&#9650; Improving</span>';
+  if (form === "Declining") return '<span class="trend-icon trend-declining">&#9660; Declining</span>';
+  if (form === "No data")   return '<span class="trend-icon trend-stable">No data</span>';
   return '<span class="trend-icon trend-stable">&#8226; Stable</span>';
 }
 
+function sharpBadge(p) {
+  return p.sharp ? ' <span class="sharp-badge">&#9889; SHARP</span>' : "";
+}
+
+// Lower hcp = better. We surface the live Handicap Index, season-low index,
+// current form (from index history), recent 5-round scoring avg, and a SHARP
+// badge for players sitting at/near their 365-day best.
 function playerMeta(p) {
   const overFlag = p.overMax ? ' <span class="over-flag">OVER 24!</span>' : "";
-  return `HCP ${p.hcp} &middot; Course HCP ${p.courseHcp}${overFlag} &middot; Avg Diff ${p.avgDiff} &middot; ${trendIcon(p.trend)}`;
+  return `HI ${p.hi} (low ${p.lowHi}) &middot; Crs ${p.courseHcp}${overFlag} &middot; L5 avg ${p.recent5} &middot; ${formIcon(p.form)}${sharpBadge(p)}`;
 }
 
 // ---- Setup: draft order ----
@@ -115,7 +123,7 @@ function renderSetup() {
     return `
       <div class="order-row">
         <span class="order-num">${i + 1}</span>
-        <span class="order-name">${cap.name} <span class="order-hcp">HCP ${cap.hcp}</span></span>
+        <span class="order-name">${cap.name} <span class="order-hcp">HI ${cap.hi}</span></span>
         <span class="order-ctrls">
           <button class="ord-btn" data-move="up" data-idx="${i}" ${i === 0 ? "disabled" : ""}>&#9650;</button>
           <button class="ord-btn" data-move="down" data-idx="${i}" ${i === state.order.length - 1 ? "disabled" : ""}>&#9660;</button>
@@ -173,7 +181,7 @@ function setOverride(captainName) {
 function poolCards(flight, captainName) {
   const pool = (flight === "B" ? flightB : flightC)
     .filter(p => !isDrafted(p.name))
-    .sort((a, b) => a.avgDiff - b.avgDiff);
+    .sort((a, b) => a.recent5 - b.recent5);
   if (!pool.length) return "";
   const rows = pool.map(p => `
     <div class="player-card flight-${p.flight}">
@@ -247,7 +255,7 @@ function renderDraft() {
     <div class="draft-status">
       <div class="pick-label">${picksDone} of ${total} picks made</div>
       <div class="on-clock">${captain.name}</div>
-      <div class="on-clock-sub">Flight A captain &middot; HCP ${captain.hcp} &middot; ${choiceText}</div>
+      <div class="on-clock-sub">Flight A captain &middot; HI ${captain.hi} &middot; ${choiceText}</div>
       <span class="round-pill">Round ${round}</span>
       ${overrideNote}
     </div>
@@ -267,9 +275,9 @@ function renderTeams() {
     return `
       <div class="team-card">
         <h3>Team ${a.name}</h3>
-        <div class="team-slot"><span class="role">A</span> <span>${a.name} (HCP ${a.hcp})</span></div>
-        <div class="team-slot"><span class="role">B</span> ${bP ? `<span>${bP.name} (HCP ${bP.hcp})</span>` : '<span class="empty">not yet drafted</span>'}</div>
-        <div class="team-slot"><span class="role">C</span> ${cP ? `<span>${cP.name} (HCP ${cP.hcp})</span>` : '<span class="empty">not yet drafted</span>'}</div>
+        <div class="team-slot"><span class="role">A</span> <span>${a.name} (HI ${a.hi})</span></div>
+        <div class="team-slot"><span class="role">B</span> ${bP ? `<span>${bP.name} (HI ${bP.hi})</span>` : '<span class="empty">not yet drafted</span>'}</div>
+        <div class="team-slot"><span class="role">C</span> ${cP ? `<span>${cP.name} (HI ${cP.hi})</span>` : '<span class="empty">not yet drafted</span>'}</div>
       </div>
     `;
   }).join("");
@@ -277,7 +285,7 @@ function renderTeams() {
 
 function renderPlayers() {
   const blocks = ["A", "B", "C"].map(flight => {
-    const list = PLAYERS.filter(p => p.flight === flight).sort((a, b) => a.hcp - b.hcp);
+    const list = PLAYERS.filter(p => p.flight === flight).sort((a, b) => a.hi - b.hi);
     const rows = list.map(p => {
       const drafted = flight !== "A" && isDrafted(p.name);
       return `
