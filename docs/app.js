@@ -82,15 +82,22 @@ function sharpBadge(p) {
   return p.sharp ? ' <span class="sharp-badge">&#9889; SHARP</span>' : "";
 }
 
+// Net score to par (white tees). E = even, + = over net par, - = under.
+function fmtNet(n) {
+  if (n === null || n === undefined) return "n/a";
+  if (n === 0) return "E";
+  return n > 0 ? `+${n}` : `${n}`;
+}
+
 // Based on 2 years of GHIN scores. We surface live Handicap Index, season-low
 // index, course handicap, last-10-round form (L10), 2-year baseline, best round
 // (ceiling), current Form, and a SHARP badge for players at/near their 365-day best.
 function playerMeta(p) {
   const overFlag = p.overMax ? ' <span class="over-flag">OVER 24!</span>' : "";
-  const ly = p.lastYear != null
-    ? ` &middot; <span class="ly">LY ${p.lastYear}</span>`
+  const ly = p.netLY != null
+    ? ` &middot; <span class="ly">LY ${fmtNet(p.netLY)}</span>`
     : ' &middot; <span class="ly ly-dnp">LY n/a</span>';
-  return `HI ${p.hi} (low ${p.lowHi}) &middot; Crs ${p.courseHcp}${overFlag} &middot; L10 ${p.l10} &middot; 2yr ${p.avg2yr} &middot; best ${p.best}${ly} &middot; ${formIcon(p.form)}${sharpBadge(p)}`;
+  return `HI ${p.hi} (low ${p.lowHi}) &middot; Crs ${p.courseHcp}${overFlag} &middot; L10 ${fmtNet(p.netL10)} &middot; 2yr ${fmtNet(p.net2yr)} &middot; best ${fmtNet(p.netBest)}${ly} &middot; ${formIcon(p.form)}${sharpBadge(p)} <span class="net-note">(net to par)</span>`;
 }
 
 // ---- Setup: draft order ----
@@ -184,7 +191,7 @@ function setOverride(captainName) {
 function poolCards(flight, captainName) {
   const pool = (flight === "B" ? flightB : flightC)
     .filter(p => !isDrafted(p.name))
-    .sort((a, b) => a.l10 - b.l10);
+    .sort((a, b) => a.netL10 - b.netL10);
   if (!pool.length) return "";
   const rows = pool.map(p => `
     <div class="player-card flight-${p.flight}">

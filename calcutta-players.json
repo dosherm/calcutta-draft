@@ -28,7 +28,11 @@
     "prior_avg": 4.24,
     "best_diff": -1.2,
     "trend_delta": -0.7,
-    "last_year_event": null
+    "last_year_event": null,
+    "net_l10": 4,
+    "net_2yr": 3,
+    "net_best": -3,
+    "net_ly": null
   },
   {
     "ghin_id": "10189718",
@@ -63,7 +67,11 @@
       "diff": 8.5,
       "gross": 80,
       "holes": 18
-    }
+    },
+    "net_l10": 3,
+    "net_2yr": 4,
+    "net_best": -5,
+    "net_ly": 4
   },
   {
     "ghin_id": "10189494",
@@ -94,7 +102,11 @@
     "prior_avg": 7.87,
     "best_diff": 0.5,
     "trend_delta": -0.6,
-    "last_year_event": null
+    "last_year_event": null,
+    "net_l10": 3,
+    "net_2yr": 2,
+    "net_best": -6,
+    "net_ly": null
   },
   {
     "ghin_id": "10189440",
@@ -129,7 +141,11 @@
       "diff": 12.1,
       "gross": 84,
       "holes": 18
-    }
+    },
+    "net_l10": 1,
+    "net_2yr": 4,
+    "net_best": -5,
+    "net_ly": 7
   },
   {
     "ghin_id": "10189677",
@@ -164,7 +180,11 @@
       "diff": 13.0,
       "gross": 85,
       "holes": 18
-    }
+    },
+    "net_l10": 5,
+    "net_2yr": 2,
+    "net_best": -6,
+    "net_ly": 8
   },
   {
     "ghin_id": "10189777",
@@ -195,7 +215,11 @@
     "prior_avg": 8.79,
     "best_diff": 1.4,
     "trend_delta": 0.8,
-    "last_year_event": null
+    "last_year_event": null,
+    "net_l10": 1,
+    "net_2yr": 2,
+    "net_best": -6,
+    "net_ly": null
   },
   {
     "ghin_id": "10189513",
@@ -230,7 +254,11 @@
       "diff": 5.9,
       "gross": 77,
       "holes": 18
-    }
+    },
+    "net_l10": 2,
+    "net_2yr": 2,
+    "net_best": -5,
+    "net_ly": -1
   },
   {
     "ghin_id": "10189450",
@@ -265,7 +293,11 @@
       "diff": 15.7,
       "gross": 88,
       "holes": 18
-    }
+    },
+    "net_l10": 3,
+    "net_2yr": 3,
+    "net_best": -6,
+    "net_ly": 8
   },
   {
     "ghin_id": "10189587",
@@ -296,7 +328,11 @@
     "prior_avg": 13.47,
     "best_diff": 7.0,
     "trend_delta": 0.5,
-    "last_year_event": null
+    "last_year_event": null,
+    "net_l10": 4,
+    "net_2yr": 6,
+    "net_best": -3,
+    "net_ly": null
   },
   {
     "ghin_id": "10649200",
@@ -327,7 +363,11 @@
     "prior_avg": 11.67,
     "best_diff": 5.9,
     "trend_delta": -0.5,
-    "last_year_event": null
+    "last_year_event": null,
+    "net_l10": 3,
+    "net_2yr": 3,
+    "net_best": -4,
+    "net_ly": null
   },
   {
     "ghin_id": "11317201",
@@ -362,7 +402,11 @@
       "diff": 13.0,
       "gross": 85,
       "holes": 18
-    }
+    },
+    "net_l10": 4,
+    "net_2yr": 4,
+    "net_best": -5,
+    "net_ly": 4
   },
   {
     "ghin_id": "10829319",
@@ -397,7 +441,11 @@
       "diff": 20.1,
       "gross": 93,
       "holes": 18
-    }
+    },
+    "net_l10": 2,
+    "net_2yr": 5,
+    "net_best": -9,
+    "net_ly": 12
   },
   {
     "ghin_id": "10189740",
@@ -432,7 +480,11 @@
       "diff": 21.9,
       "gross": 95,
       "holes": 18
-    }
+    },
+    "net_l10": 5,
+    "net_2yr": 6,
+    "net_best": -3,
+    "net_ly": 14
   },
   {
     "ghin_id": "10189518",
@@ -463,7 +515,11 @@
     "prior_avg": 12.55,
     "best_diff": 5.7,
     "trend_delta": 0.1,
-    "last_year_event": null
+    "last_year_event": null,
+    "net_l10": 3,
+    "net_2yr": 4,
+    "net_best": -5,
+    "net_ly": null
   },
   {
     "ghin_id": "10408672",
@@ -498,7 +554,11 @@
       "diff": 20.1,
       "gross": 93,
       "holes": 18
-    }
+    },
+    "net_l10": 4,
+    "net_2yr": 5,
+    "net_best": -3,
+    "net_ly": 11
   },
   {
     "ghin_id": "10189461",
@@ -533,7 +593,11 @@
       "diff": 14.6,
       "gross": 43,
       "holes": 9
-    }
+    },
+    "net_l10": 5,
+    "net_2yr": 5,
+    "net_best": -9,
+    "net_ly": 4
   },
   {
     "ghin_id": "10877462",
@@ -568,7 +632,11 @@
       "diff": 10.3,
       "gross": 82,
       "holes": 18
-    }
+    },
+    "net_l10": 3,
+    "net_2yr": 2,
+    "net_best": -6,
+    "net_ly": -1
   },
   {
     "ghin_id": "10790865",
@@ -603,7 +671,11 @@
       "diff": 12.1,
       "gross": 84,
       "holes": 18
-    }
+    },
+    "net_l10": 3,
+    "net_2yr": 2,
+    "net_best": -7,
+    "net_ly": 1
   },
   {
     "ghin_id": "10026488",
@@ -638,7 +710,11 @@
       "diff": 20.1,
       "gross": 93,
       "holes": 18
-    }
+    },
+    "net_l10": 3,
+    "net_2yr": 3,
+    "net_best": -8,
+    "net_ly": 9
   },
   {
     "ghin_id": "10288717",
@@ -673,7 +749,11 @@
       "diff": 17.4,
       "gross": 90,
       "holes": 18
-    }
+    },
+    "net_l10": 3,
+    "net_2yr": 2,
+    "net_best": -8,
+    "net_ly": 6
   },
   {
     "ghin_id": "10189444",
@@ -704,7 +784,11 @@
     "prior_avg": 15.78,
     "best_diff": 7.7,
     "trend_delta": 1.9,
-    "last_year_event": null
+    "last_year_event": null,
+    "net_l10": 2,
+    "net_2yr": 2,
+    "net_best": -5,
+    "net_ly": null
   },
   {
     "ghin_id": "12967632",
@@ -735,7 +819,11 @@
     "prior_avg": 16.86,
     "best_diff": 8.0,
     "trend_delta": 2.0,
-    "last_year_event": null
+    "last_year_event": null,
+    "net_l10": 2,
+    "net_2yr": 5,
+    "net_best": -5,
+    "net_ly": null
   },
   {
     "ghin_id": "10193029",
@@ -770,7 +858,11 @@
       "diff": 15.7,
       "gross": 88,
       "holes": 18
-    }
+    },
+    "net_l10": 4,
+    "net_2yr": 5,
+    "net_best": -6,
+    "net_ly": 1
   },
   {
     "ghin_id": "10640059",
@@ -805,7 +897,11 @@
       "diff": 17.4,
       "gross": 90,
       "holes": 18
-    }
+    },
+    "net_l10": 3,
+    "net_2yr": 3,
+    "net_best": -7,
+    "net_ly": 3
   },
   {
     "ghin_id": "10189814",
@@ -840,7 +936,11 @@
       "diff": 16.5,
       "gross": 89,
       "holes": 18
-    }
+    },
+    "net_l10": 4,
+    "net_2yr": 2,
+    "net_best": -5,
+    "net_ly": 2
   },
   {
     "ghin_id": "10189705",
@@ -875,7 +975,11 @@
       "diff": 19.2,
       "gross": 92,
       "holes": 18
-    }
+    },
+    "net_l10": 4,
+    "net_2yr": 4,
+    "net_best": -6,
+    "net_ly": 4
   },
   {
     "ghin_id": "12209140",
@@ -910,7 +1014,11 @@
       "diff": 21.9,
       "gross": 95,
       "holes": 18
-    }
+    },
+    "net_l10": 3,
+    "net_2yr": 4,
+    "net_best": -5,
+    "net_ly": 7
   },
   {
     "ghin_id": "10973792",
@@ -941,7 +1049,11 @@
     "prior_avg": 22.84,
     "best_diff": 14.2,
     "trend_delta": 0.8,
-    "last_year_event": null
+    "last_year_event": null,
+    "net_l10": 5,
+    "net_2yr": 6,
+    "net_best": -4,
+    "net_ly": null
   },
   {
     "ghin_id": "10193174",
@@ -976,7 +1088,11 @@
       "diff": 27.2,
       "gross": 101,
       "holes": 18
-    }
+    },
+    "net_l10": 3,
+    "net_2yr": 3,
+    "net_best": -6,
+    "net_ly": 10
   },
   {
     "ghin_id": "10189614",
@@ -1011,7 +1127,11 @@
       "diff": 22.8,
       "gross": 96,
       "holes": 18
-    }
+    },
+    "net_l10": 3,
+    "net_2yr": 5,
+    "net_best": -5,
+    "net_ly": 5
   },
   {
     "ghin_id": "10404325",
@@ -1046,7 +1166,11 @@
       "diff": 23.7,
       "gross": 97,
       "holes": 18
-    }
+    },
+    "net_l10": 2,
+    "net_2yr": 2,
+    "net_best": -4,
+    "net_ly": 6
   },
   {
     "ghin_id": "10189743",
@@ -1077,7 +1201,11 @@
     "prior_avg": 19.84,
     "best_diff": 15.4,
     "trend_delta": -0.8,
-    "last_year_event": null
+    "last_year_event": null,
+    "net_l10": 2,
+    "net_2yr": 2,
+    "net_best": -3,
+    "net_ly": null
   },
   {
     "ghin_id": "11317199",
@@ -1112,7 +1240,11 @@
       "diff": 24.6,
       "gross": 98,
       "holes": 18
-    }
+    },
+    "net_l10": 4,
+    "net_2yr": 2,
+    "net_best": -9,
+    "net_ly": 6
   },
   {
     "ghin_id": "10189571",
@@ -1147,7 +1279,11 @@
       "diff": 18.3,
       "gross": 91,
       "holes": 18
-    }
+    },
+    "net_l10": 4,
+    "net_2yr": 2,
+    "net_best": -7,
+    "net_ly": -1
   },
   {
     "ghin_id": "11421954",
@@ -1178,7 +1314,11 @@
     "prior_avg": 24.25,
     "best_diff": 16.5,
     "trend_delta": 0.7,
-    "last_year_event": null
+    "last_year_event": null,
+    "net_l10": 3,
+    "net_2yr": 5,
+    "net_best": -5,
+    "net_ly": null
   },
   {
     "ghin_id": "11003874",
@@ -1213,6 +1353,10 @@
       "diff": 28.1,
       "gross": 102,
       "holes": 18
-    }
+    },
+    "net_l10": 4,
+    "net_2yr": 6,
+    "net_best": -6,
+    "net_ly": 6
   }
 ]

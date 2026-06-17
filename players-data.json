@@ -5,14 +5,14 @@
     "hi": 1.4,
     "courseHcp": 1,
     "lowHi": 0.4,
-    "l10": 4.96,
-    "avg2yr": 4.36,
-    "best": -1.2,
+    "netL10": 4,
+    "net2yr": 3,
+    "netBest": -3,
+    "netLY": null,
     "rounds": 85,
     "form": "Declining",
     "sharp": false,
-    "overMax": false,
-    "lastYear": null
+    "overMax": false
   },
   {
     "name": "Matt Ruess",
@@ -20,14 +20,14 @@
     "hi": 5.2,
     "courseHcp": 5,
     "lowHi": 2.9,
-    "l10": 7.51,
-    "avg2yr": 8.56,
-    "best": 0.4,
+    "netL10": 3,
+    "net2yr": 4,
+    "netBest": -5,
+    "netLY": 4,
     "rounds": 138,
     "form": "Stable",
     "sharp": false,
-    "overMax": false,
-    "lastYear": 8.5
+    "overMax": false
   },
   {
     "name": "Chris Myers",
@@ -35,14 +35,14 @@
     "hi": 6.0,
     "courseHcp": 6,
     "lowHi": 3.2,
-    "l10": 8.48,
-    "avg2yr": 7.55,
-    "best": 0.5,
+    "netL10": 3,
+    "net2yr": 2,
+    "netBest": -6,
+    "netLY": null,
     "rounds": 105,
     "form": "Declining",
     "sharp": false,
-    "overMax": false,
-    "lastYear": null
+    "overMax": false
   },
   {
     "name": "Van Huffine",
@@ -50,14 +50,14 @@
     "hi": 6.0,
     "courseHcp": 6,
     "lowHi": 4.8,
-    "l10": 7.26,
-    "avg2yr": 9.78,
-    "best": 1.6,
+    "netL10": 1,
+    "net2yr": 4,
+    "netBest": -5,
+    "netLY": 7,
     "rounds": 273,
     "form": "Improving",
     "sharp": false,
-    "overMax": false,
-    "lastYear": 12.1
+    "overMax": false
   },
   {
     "name": "Marcus Malczewski",
@@ -65,14 +65,14 @@
     "hi": 6.3,
     "courseHcp": 6,
     "lowHi": 3.1,
-    "l10": 10.7,
-    "avg2yr": 8.07,
-    "best": 1.4,
+    "netL10": 5,
+    "net2yr": 2,
+    "netBest": -6,
+    "netLY": 8,
     "rounds": 184,
     "form": "Declining",
     "sharp": false,
-    "overMax": false,
-    "lastYear": 13.0
+    "overMax": false
   },
   {
     "name": "Kevin Babcock",
@@ -80,14 +80,14 @@
     "hi": 6.7,
     "courseHcp": 7,
     "lowHi": 5.5,
-    "l10": 8.03,
-    "avg2yr": 8.87,
-    "best": 1.4,
+    "netL10": 1,
+    "net2yr": 2,
+    "netBest": -6,
+    "netLY": null,
     "rounds": 173,
     "form": "Improving",
     "sharp": false,
-    "overMax": false,
-    "lastYear": null
+    "overMax": false
   },
   {
     "name": "Richard Amodeo",
@@ -95,14 +95,14 @@
     "hi": 7.0,
     "courseHcp": 7,
     "lowHi": 4.7,
-    "l10": 8.88,
-    "avg2yr": 8.65,
-    "best": 2.5,
+    "netL10": 2,
+    "net2yr": 2,
+    "netBest": -5,
+    "netLY": -1,
     "rounds": 141,
     "form": "Stable",
     "sharp": false,
-    "overMax": false,
-    "lastYear": 5.9
+    "overMax": false
   },
   {
     "name": "Dan Sherman",
@@ -110,14 +110,14 @@
     "hi": 8.2,
     "courseHcp": 9,
     "lowHi": 6.9,
-    "l10": 10.93,
-    "avg2yr": 11.07,
-    "best": 3.2,
+    "netL10": 3,
+    "net2yr": 3,
+    "netBest": -6,
+    "netLY": 8,
     "rounds": 218,
     "form": "Declining",
     "sharp": false,
-    "overMax": false,
-    "lastYear": 15.7
+    "overMax": false
   },
   {
     "name": "Richard Oliver Jr",
@@ -125,14 +125,14 @@
     "hi": 9.4,
     "courseHcp": 10,
     "lowHi": 9.4,
-    "l10": 12.96,
-    "avg2yr": 14.6,
-    "best": 7.0,
+    "netL10": 4,
+    "net2yr": 6,
+    "netBest": -3,
+    "netLY": null,
     "rounds": 69,
     "form": "Improving",
     "sharp": true,
-    "overMax": false,
-    "lastYear": null
+    "overMax": false
   },
   {
     "name": "Marc Cilfone",
@@ -140,14 +140,14 @@
     "hi": 9.4,
     "courseHcp": 10,
     "lowHi": 9.0,
-    "l10": 12.15,
-    "avg2yr": 12.42,
-    "best": 5.9,
+    "netL10": 3,
+    "net2yr": 3,
+    "netBest": -4,
+    "netLY": null,
     "rounds": 75,
     "form": "Declining",
     "sharp": true,
-    "overMax": false,
-    "lastYear": null
+    "overMax": false
   },
   {
     "name": "Casey Wedding",
@@ -155,14 +155,14 @@
     "hi": 9.7,
     "courseHcp": 10,
     "lowHi": 9.3,
-    "l10": 13.18,
-    "avg2yr": 13.52,
-    "best": 5.3,
+    "netL10": 4,
+    "net2yr": 4,
+    "netBest": -5,
+    "netLY": 4,
     "rounds": 77,
     "form": "Declining",
     "sharp": true,
-    "overMax": false,
-    "lastYear": 13.0
+    "overMax": false
   },
   {
     "name": "Adam Paulson",
@@ -170,14 +170,14 @@
     "hi": 9.7,
     "courseHcp": 10,
     "lowHi": 9.7,
-    "l10": 11.57,
-    "avg2yr": 14.22,
-    "best": 1.4,
+    "netL10": 2,
+    "net2yr": 5,
+    "netBest": -9,
+    "netLY": 12,
     "rounds": 148,
     "form": "Improving",
     "sharp": true,
-    "overMax": false,
-    "lastYear": 20.1
+    "overMax": false
   },
   {
     "name": "Ruben Hernandez",
@@ -185,14 +185,14 @@
     "hi": 9.8,
     "courseHcp": 10,
     "lowHi": 9.3,
-    "l10": 14.52,
-    "avg2yr": 14.77,
-    "best": 6.8,
+    "netL10": 5,
+    "net2yr": 6,
+    "netBest": -3,
+    "netLY": 14,
     "rounds": 93,
     "form": "Declining",
     "sharp": true,
-    "overMax": false,
-    "lastYear": 21.9
+    "overMax": false
   },
   {
     "name": "Steve O'Day",
@@ -200,14 +200,14 @@
     "hi": 9.9,
     "courseHcp": 11,
     "lowHi": 8.8,
-    "l10": 12.45,
-    "avg2yr": 13.05,
-    "best": 5.7,
+    "netL10": 3,
+    "net2yr": 4,
+    "netBest": -5,
+    "netLY": null,
     "rounds": 165,
     "form": "Stable",
     "sharp": false,
-    "overMax": false,
-    "lastYear": null
+    "overMax": false
   },
   {
     "name": "Eric Newell",
@@ -215,14 +215,14 @@
     "hi": 10.2,
     "courseHcp": 11,
     "lowHi": 9.9,
-    "l10": 14.19,
-    "avg2yr": 14.34,
-    "best": 7.7,
+    "netL10": 4,
+    "net2yr": 5,
+    "netBest": -3,
+    "netLY": 11,
     "rounds": 70,
     "form": "Declining",
     "sharp": true,
-    "overMax": false,
-    "lastYear": 20.1
+    "overMax": false
   },
   {
     "name": "John Jordan",
@@ -230,14 +230,14 @@
     "hi": 10.9,
     "courseHcp": 12,
     "lowHi": 10.9,
-    "l10": 15.24,
-    "avg2yr": 15.09,
-    "best": 3.1,
+    "netL10": 5,
+    "net2yr": 5,
+    "netBest": -9,
+    "netLY": 4,
     "rounds": 135,
     "form": "Stable",
     "sharp": true,
-    "overMax": false,
-    "lastYear": 14.6
+    "overMax": false
   },
   {
     "name": "Josh Marlow",
@@ -245,14 +245,14 @@
     "hi": 11.0,
     "courseHcp": 12,
     "lowHi": 9.1,
-    "l10": 13.36,
-    "avg2yr": 12.7,
-    "best": 5.9,
+    "netL10": 3,
+    "net2yr": 2,
+    "netBest": -6,
+    "netLY": -1,
     "rounds": 119,
     "form": "Stable",
     "sharp": false,
-    "overMax": false,
-    "lastYear": 10.3
+    "overMax": false
   },
   {
     "name": "Mike Ballentine",
@@ -260,14 +260,14 @@
     "hi": 11.5,
     "courseHcp": 12,
     "lowHi": 7.8,
-    "l10": 14.1,
-    "avg2yr": 13.62,
-    "best": 5.0,
+    "netL10": 3,
+    "net2yr": 2,
+    "netBest": -7,
+    "netLY": 1,
     "rounds": 169,
     "form": "Improving",
     "sharp": false,
-    "overMax": false,
-    "lastYear": 12.1
+    "overMax": false
   },
   {
     "name": "Daniel Darlson",
@@ -275,14 +275,14 @@
     "hi": 12.1,
     "courseHcp": 13,
     "lowHi": 10.0,
-    "l10": 14.99,
-    "avg2yr": 14.39,
-    "best": 5.0,
+    "netL10": 3,
+    "net2yr": 3,
+    "netBest": -8,
+    "netLY": 9,
     "rounds": 168,
     "form": "Improving",
     "sharp": false,
-    "overMax": false,
-    "lastYear": 20.1
+    "overMax": false
   },
   {
     "name": "Kevin Livesay",
@@ -290,14 +290,14 @@
     "hi": 12.1,
     "courseHcp": 13,
     "lowHi": 9.8,
-    "l10": 14.36,
-    "avg2yr": 13.66,
-    "best": 5.4,
+    "netL10": 3,
+    "net2yr": 2,
+    "netBest": -8,
+    "netLY": 6,
     "rounds": 59,
     "form": "Declining",
     "sharp": false,
-    "overMax": false,
-    "lastYear": 17.4
+    "overMax": false
   },
   {
     "name": "Tom Frame",
@@ -305,14 +305,14 @@
     "hi": 12.2,
     "courseHcp": 13,
     "lowHi": 10.5,
-    "l10": 13.85,
-    "avg2yr": 13.7,
-    "best": 7.7,
+    "netL10": 2,
+    "net2yr": 2,
+    "netBest": -5,
+    "netLY": null,
     "rounds": 121,
     "form": "Improving",
     "sharp": false,
-    "overMax": false,
-    "lastYear": null
+    "overMax": false
   },
   {
     "name": "Tim Urbaniak",
@@ -320,14 +320,14 @@
     "hi": 12.7,
     "courseHcp": 14,
     "lowHi": 12.7,
-    "l10": 14.83,
-    "avg2yr": 17.4,
-    "best": 8.0,
+    "netL10": 2,
+    "net2yr": 5,
+    "netBest": -5,
+    "netLY": null,
     "rounds": 45,
     "form": "Improving",
     "sharp": true,
-    "overMax": false,
-    "lastYear": null
+    "overMax": false
   },
   {
     "name": "Michael Barancyk",
@@ -335,14 +335,14 @@
     "hi": 14.6,
     "courseHcp": 16,
     "lowHi": 13.5,
-    "l10": 17.72,
-    "avg2yr": 18.63,
-    "best": 9.2,
+    "netL10": 4,
+    "net2yr": 5,
+    "netBest": -6,
+    "netLY": 1,
     "rounds": 150,
     "form": "Stable",
     "sharp": false,
-    "overMax": false,
-    "lastYear": 15.7
+    "overMax": false
   },
   {
     "name": "Matt Bruder",
@@ -350,14 +350,14 @@
     "hi": 15.1,
     "courseHcp": 16,
     "lowHi": 14.4,
-    "l10": 17.87,
-    "avg2yr": 17.44,
-    "best": 8.5,
+    "netL10": 3,
+    "net2yr": 3,
+    "netBest": -7,
+    "netLY": 3,
     "rounds": 108,
     "form": "Declining",
     "sharp": false,
-    "overMax": false,
-    "lastYear": 17.4
+    "overMax": false
   },
   {
     "name": "Timothy Briggs",
@@ -365,14 +365,14 @@
     "hi": 15.1,
     "courseHcp": 16,
     "lowHi": 13.1,
-    "l10": 18.76,
-    "avg2yr": 17.02,
-    "best": 10.4,
+    "netL10": 4,
+    "net2yr": 2,
+    "netBest": -5,
+    "netLY": 2,
     "rounds": 55,
     "form": "Declining",
     "sharp": false,
-    "overMax": false,
-    "lastYear": 16.5
+    "overMax": false
   },
   {
     "name": "Hunter Carmichael",
@@ -380,14 +380,14 @@
     "hi": 15.2,
     "courseHcp": 16,
     "lowHi": 13.5,
-    "l10": 18.97,
-    "avg2yr": 18.37,
-    "best": 10.3,
+    "netL10": 4,
+    "net2yr": 4,
+    "netBest": -6,
+    "netLY": 4,
     "rounds": 96,
     "form": "Declining",
     "sharp": false,
-    "overMax": false,
-    "lastYear": 19.2
+    "overMax": false
   },
   {
     "name": "Ray Govert",
@@ -395,14 +395,14 @@
     "hi": 15.3,
     "courseHcp": 17,
     "lowHi": 15.3,
-    "l10": 18.34,
-    "avg2yr": 19.24,
-    "best": 11.2,
+    "netL10": 3,
+    "net2yr": 4,
+    "netBest": -5,
+    "netLY": 7,
     "rounds": 121,
     "form": "Declining",
     "sharp": true,
-    "overMax": false,
-    "lastYear": 21.9
+    "overMax": false
   },
   {
     "name": "Josh Reading",
@@ -410,14 +410,14 @@
     "hi": 17.6,
     "courseHcp": 19,
     "lowHi": 17.6,
-    "l10": 22.05,
-    "avg2yr": 22.82,
-    "best": 14.2,
+    "netL10": 5,
+    "net2yr": 6,
+    "netBest": -4,
+    "netLY": null,
     "rounds": 60,
     "form": "Improving",
     "sharp": true,
-    "overMax": false,
-    "lastYear": null
+    "overMax": false
   },
   {
     "name": "Sean Granger",
@@ -425,14 +425,14 @@
     "hi": 18.0,
     "courseHcp": 20,
     "lowHi": 16.9,
-    "l10": 20.49,
-    "avg2yr": 20.86,
-    "best": 12.5,
+    "netL10": 3,
+    "net2yr": 3,
+    "netBest": -6,
+    "netLY": 10,
     "rounds": 101,
     "form": "Improving",
     "sharp": false,
-    "overMax": false,
-    "lastYear": 27.2
+    "overMax": false
   },
   {
     "name": "Dean Ricci",
@@ -440,14 +440,14 @@
     "hi": 18.1,
     "courseHcp": 20,
     "lowHi": 18.1,
-    "l10": 20.5,
-    "avg2yr": 22.54,
-    "best": 13.9,
+    "netL10": 3,
+    "net2yr": 5,
+    "netBest": -5,
+    "netLY": 5,
     "rounds": 94,
     "form": "Improving",
     "sharp": true,
-    "overMax": false,
-    "lastYear": 22.8
+    "overMax": false
   },
   {
     "name": "Dan Margiotta",
@@ -455,14 +455,14 @@
     "hi": 18.1,
     "courseHcp": 20,
     "lowHi": 16.9,
-    "l10": 20.11,
-    "avg2yr": 19.97,
-    "best": 14.6,
+    "netL10": 2,
+    "net2yr": 2,
+    "netBest": -4,
+    "netLY": 6,
     "rounds": 63,
     "form": "Improving",
     "sharp": false,
-    "overMax": false,
-    "lastYear": 23.7
+    "overMax": false
   },
   {
     "name": "Jim Rainbolt",
@@ -470,14 +470,14 @@
     "hi": 18.5,
     "courseHcp": 20,
     "lowHi": 17.7,
-    "l10": 20.61,
-    "avg2yr": 20.31,
-    "best": 15.4,
+    "netL10": 2,
+    "net2yr": 2,
+    "netBest": -3,
+    "netLY": null,
     "rounds": 54,
     "form": "Declining",
     "sharp": false,
-    "overMax": false,
-    "lastYear": null
+    "overMax": false
   },
   {
     "name": "Kevin Rosenthal",
@@ -485,14 +485,14 @@
     "hi": 19.2,
     "courseHcp": 21,
     "lowHi": 17.4,
-    "l10": 22.56,
-    "avg2yr": 21.26,
-    "best": 11.3,
+    "netL10": 4,
+    "net2yr": 2,
+    "netBest": -9,
+    "netLY": 6,
     "rounds": 77,
     "form": "Declining",
     "sharp": false,
-    "overMax": false,
-    "lastYear": 24.6
+    "overMax": false
   },
   {
     "name": "Jerry Lambert",
@@ -500,14 +500,14 @@
     "hi": 19.4,
     "courseHcp": 21,
     "lowHi": 17.2,
-    "l10": 23.05,
-    "avg2yr": 21.14,
-    "best": 13.0,
+    "netL10": 4,
+    "net2yr": 2,
+    "netBest": -7,
+    "netLY": -1,
     "rounds": 100,
     "form": "Declining",
     "sharp": false,
-    "overMax": false,
-    "lastYear": 18.3
+    "overMax": false
   },
   {
     "name": "Wendell Carter",
@@ -515,14 +515,14 @@
     "hi": 21.1,
     "courseHcp": 23,
     "lowHi": 21.0,
-    "l10": 23.56,
-    "avg2yr": 25.76,
-    "best": 16.5,
+    "netL10": 3,
+    "net2yr": 5,
+    "netBest": -5,
+    "netLY": null,
     "rounds": 87,
     "form": "Improving",
     "sharp": true,
-    "overMax": false,
-    "lastYear": null
+    "overMax": false
   },
   {
     "name": "Cihan Ozdemir",
@@ -530,13 +530,13 @@
     "hi": 22.5,
     "courseHcp": 25,
     "lowHi": 22.0,
-    "l10": 26.27,
-    "avg2yr": 27.9,
-    "best": 17.4,
+    "netL10": 4,
+    "net2yr": 6,
+    "netBest": -6,
+    "netLY": 6,
     "rounds": 67,
     "form": "Stable",
     "sharp": true,
-    "overMax": true,
-    "lastYear": 28.1
+    "overMax": true
   }
 ]

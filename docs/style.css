@@ -185,6 +185,7 @@ main {
 
 .ly { font-weight: 700; color: var(--navy); }
 .ly-dnp { color: var(--muted); font-weight: 500; }
+.net-note { color: var(--muted); font-style: italic; font-size: 0.72rem; }
 
 .trend-icon { font-size: 0.78rem; font-weight: 700; }
 .trend-improving { color: #157a42; }
