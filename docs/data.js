@@ -63,15 +63,6 @@ const PLAYERS = [
     "overMax": false
   },
   {
-    "name": "Bret Bologna",
-    "flight": "A",
-    "hcp": 7.2,
-    "courseHcp": 7,
-    "avgDiff": 9.45,
-    "trend": "stable",
-    "overMax": false
-  },
-  {
     "name": "Dan Sherman",
     "flight": "A",
     "hcp": 8.2,
@@ -90,8 +81,17 @@ const PLAYERS = [
     "overMax": false
   },
   {
+    "name": "Marc Cilfone",
+    "flight": "A",
+    "hcp": 9.4,
+    "courseHcp": 10,
+    "avgDiff": 10.7,
+    "trend": "stable",
+    "overMax": false
+  },
+  {
     "name": "Casey Wedding",
-    "flight": "B",
+    "flight": "A",
     "hcp": 9.7,
     "courseHcp": 10,
     "avgDiff": 11.27,
@@ -100,11 +100,29 @@ const PLAYERS = [
   },
   {
     "name": "Adam Paulson",
-    "flight": "B",
+    "flight": "A",
     "hcp": 9.7,
     "courseHcp": 10,
     "avgDiff": 12.94,
     "trend": "improving",
+    "overMax": false
+  },
+  {
+    "name": "Ruben Hernandez",
+    "flight": "B",
+    "hcp": 9.8,
+    "courseHcp": 10,
+    "avgDiff": 12.96,
+    "trend": "declining",
+    "overMax": false
+  },
+  {
+    "name": "Steve O'Day",
+    "flight": "B",
+    "hcp": 9.9,
+    "courseHcp": 11,
+    "avgDiff": 12.45,
+    "trend": "stable",
     "overMax": false
   },
   {
@@ -190,10 +208,19 @@ const PLAYERS = [
   },
   {
     "name": "Matt Bruder",
-    "flight": "C",
+    "flight": "B",
     "hcp": 15.1,
     "courseHcp": 16,
     "avgDiff": 18.03,
+    "trend": "stable",
+    "overMax": false
+  },
+  {
+    "name": "Timothy Briggs",
+    "flight": "C",
+    "hcp": 15.1,
+    "courseHcp": 16,
+    "avgDiff": 7.67,
     "trend": "stable",
     "overMax": false
   },
@@ -240,6 +267,24 @@ const PLAYERS = [
     "courseHcp": 20,
     "avgDiff": 21.86,
     "trend": "improving",
+    "overMax": false
+  },
+  {
+    "name": "Dan Margiotta",
+    "flight": "C",
+    "hcp": 18.1,
+    "courseHcp": 20,
+    "avgDiff": 21.0,
+    "trend": "stable",
+    "overMax": false
+  },
+  {
+    "name": "Jim Rainbolt",
+    "flight": "C",
+    "hcp": 18.5,
+    "courseHcp": 20,
+    "avgDiff": 18.75,
+    "trend": "stable",
     "overMax": false
   },
   {
