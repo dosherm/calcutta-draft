@@ -1,0 +1,247 @@
+:root {
+  --navy: #1a2e4a;
+  --gold: #c9a84c;
+  --green: #1a4a3a;
+  --red: #7a1a1a;
+  --bg: #f4f5f7;
+  --card: #ffffff;
+  --text: #1a1a1a;
+  --muted: #6b7280;
+  --border: #e2e4e9;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding-bottom: 90px;
+}
+
+.app-header {
+  background: var(--navy);
+  color: #fff;
+  padding: 18px 16px 14px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.app-header h1 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--gold);
+  letter-spacing: 0.3px;
+}
+.app-header .subtitle {
+  font-size: 0.8rem;
+  color: #cdd5e0;
+  margin-top: 2px;
+}
+
+.tabs {
+  display: flex;
+  position: sticky;
+  top: 64px;
+  z-index: 19;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+}
+.tab-btn {
+  flex: 1;
+  padding: 12px 0;
+  border: none;
+  background: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--muted);
+  border-bottom: 3px solid transparent;
+}
+.tab-btn.active {
+  color: var(--navy);
+  border-bottom-color: var(--gold);
+}
+
+main {
+  padding: 14px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+/* ---- Draft view ---- */
+
+.draft-status {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.draft-status .pick-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  font-weight: 700;
+}
+.draft-status .on-clock {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--navy);
+  margin: 4px 0 2px;
+}
+.draft-status .on-clock-sub {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.draft-status .round-pill {
+  display: inline-block;
+  background: var(--gold);
+  color: #2a2106;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  margin-top: 8px;
+}
+
+.draft-complete {
+  text-align: center;
+  padding: 30px 16px;
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.draft-complete h2 { color: var(--green); margin-top: 0; }
+
+.section-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin: 18px 4px 8px;
+}
+
+.player-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--card);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  border-left: 4px solid var(--border);
+}
+.player-card.flight-A { border-left-color: var(--green); }
+.player-card.flight-B { border-left-color: var(--navy); }
+.player-card.flight-C { border-left-color: var(--red); }
+
+.player-card .pinfo { flex: 1; min-width: 0; }
+.player-card .pname {
+  font-weight: 700;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.player-card .pmeta {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.player-card .over-flag {
+  color: var(--red);
+  font-weight: 700;
+}
+
+.pick-btn {
+  flex-shrink: 0;
+  margin-left: 10px;
+  padding: 9px 16px;
+  border: none;
+  border-radius: 8px;
+  background: var(--navy);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.pick-btn:active { opacity: 0.75; }
+
+.trend-icon { font-size: 0.78rem; font-weight: 700; }
+.trend-improving { color: #157a42; }
+.trend-declining { color: #b1342a; }
+.trend-stable { color: var(--muted); }
+
+/* ---- Teams view ---- */
+
+.team-card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.team-card h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  color: var(--navy);
+}
+.team-slot {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-top: 1px dashed var(--border);
+  font-size: 0.9rem;
+}
+.team-slot:first-of-type { border-top: none; }
+.team-slot .role {
+  font-weight: 700;
+  color: var(--muted);
+  width: 26px;
+}
+.team-slot .empty { color: var(--muted); font-style: italic; }
+
+/* ---- Players view ---- */
+
+.flight-block { margin-bottom: 18px; }
+.flight-title {
+  font-weight: 800;
+  font-size: 1rem;
+  margin: 0 0 8px 4px;
+}
+.flight-title.A { color: var(--green); }
+.flight-title.B { color: var(--navy); }
+.flight-title.C { color: var(--red); }
+
+.player-card.drafted {
+  opacity: 0.45;
+}
+.player-card.drafted .pick-btn { display: none; }
+.drafted-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  margin-left: 10px;
+  white-space: nowrap;
+}
+
+.reset-fab {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--red);
+  color: #fff;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+  z-index: 30;
+}
+.reset-fab:active { opacity: 0.8; }

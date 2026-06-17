@@ -1,0 +1,19 @@
+{
+  "name": "calcutta-analysis",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "analyze": "npx tsx analyze.ts",
+    "draft": "npx tsx draft-helper.ts"
+  },
+  "dependencies": {
+    "ghin": "latest",
+    "papaparse": "^5.4.1"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "@types/node": "^22.0.0",
+    "@types/papaparse": "^5.3.14",
+    "typescript": "^5.6.0"
+  }
+}
