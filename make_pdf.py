@@ -23,7 +23,7 @@ class PDF(FPDF):
         self.cell(0, 8, "Youche Country Club  -  Calcutta Player Guide", align="C", new_x="LMARGIN", new_y="NEXT")
         self.set_font("Helvetica", "", 9)
         self.set_text_color(200, 210, 220)
-        self.cell(0, 5, "2026 Season  |  Flights by Percentile  |  Based on Last 20 GHIN Rounds", align="C", new_x="LMARGIN", new_y="NEXT")
+        self.cell(0, 5, "2026 Season  |  Flights by Percentile  |  Based on 2 Years of GHIN Scores", align="C", new_x="LMARGIN", new_y="NEXT")
         self.ln(4)
 
     def footer(self):
@@ -31,8 +31,8 @@ class PDF(FPDF):
         self.set_font("Helvetica", "I", 8)
         self.set_text_color(150, 150, 150)
         self.cell(0, 5,
-                  "HI = current Handicap Index; Low = 365-day low. L5 Avg = avg 18-hole-equiv differential, last 5 rounds. "
-                  "Course HCP = White tees, Youche CC (70.4 / 127 / 71). Form from index history. * SHARP = at season low.",
+                  "HI = current Index; Low = 365-day low. L10 / 2yr = avg 18-hole-equiv differential (last 10 rounds / 2 years). "
+                  "Best = lowest 2yr differential (ceiling). Crs = White tees Youche CC (70.4/127/71). * SHARP = at season low.",
                   align="C", new_x="LMARGIN", new_y="NEXT")
         self.cell(0, 5, f"Page {self.page_no()}", align="C")
 
@@ -54,8 +54,8 @@ class PDF(FPDF):
         self.set_font("Helvetica", "B", 9)
         self.set_line_width(0.2)
         self.set_draw_color(200, 200, 200)
-        col_w = [60, 20, 20, 24, 24, 38]
-        labels = ["Player", "HI", "Low", "Crs HCP", "L5 Avg", "Form"]
+        col_w = [50, 16, 16, 20, 18, 18, 16, 34]
+        labels = ["Player", "HI", "Low", "Crs", "L10", "2yr", "Best", "Form"]
         for lbl, w in zip(labels, col_w):
             self.cell(w, 7, lbl, border="B", fill=True, align="C" if lbl != "Player" else "L")
         self.ln()
@@ -102,12 +102,15 @@ class PDF(FPDF):
             else:
                 self.set_fill_color(255, 255, 255)
 
-            # Recent-5 average (current scoring form)
+            # L10 (last-10-round form) and 2yr baseline and best (ceiling)
             self.set_font("Helvetica", "", 10)
             self.set_text_color(80, 80, 80)
-            self.cell(col_w[4], 9, str(p.get("recent5_avg", "")), border="B", fill=fill, align="C")
+            self.cell(col_w[4], 9, str(p.get("recent_avg", "")), border="B", fill=fill, align="C")
+            self.cell(col_w[5], 9, str(p.get("baseline_2yr", "")), border="B", fill=fill, align="C")
+            self.set_text_color(120, 90, 30)
+            self.cell(col_w[6], 9, str(p.get("best_diff", "")), border="B", fill=fill, align="C")
 
-            # Form (from index history)
+            # Form (from 2yr recent-vs-prior trend)
             form = p.get("form", "Stable")
             if form == "Improving":
                 self.set_text_color(20, 120, 60)
@@ -115,8 +118,8 @@ class PDF(FPDF):
                 self.set_text_color(160, 30, 30)
             else:
                 self.set_text_color(80, 80, 80)
-            self.set_font("Helvetica", "B", 9)
-            self.cell(col_w[5], 9, FORM_LABEL.get(form, form), border="B", fill=fill, align="C")
+            self.set_font("Helvetica", "B", 8.5)
+            self.cell(col_w[7], 9, FORM_LABEL.get(form, form), border="B", fill=fill, align="C")
             self.ln()
 
         self.set_text_color(20, 20, 20)
@@ -137,7 +140,7 @@ class PDF(FPDF):
         self.set_text_color(100, 100, 100)
         self.set_x(10)
         self.cell(0, 5,
-                  "Form (from index history):  Improving (+) = index falling   |   Stable   |   Declining (-) = index rising."
+                  "Form (last 10 rounds vs prior 20, over 2 years):  Improving (+) / Stable / Declining (-)."
                   "    * SHARP = index at/near its 365-day low (peaking).",
                   align="C", new_x="LMARGIN", new_y="NEXT")
         self.ln(2)

@@ -82,12 +82,12 @@ function sharpBadge(p) {
   return p.sharp ? ' <span class="sharp-badge">&#9889; SHARP</span>' : "";
 }
 
-// Lower hcp = better. We surface the live Handicap Index, season-low index,
-// current form (from index history), recent 5-round scoring avg, and a SHARP
-// badge for players sitting at/near their 365-day best.
+// Based on 2 years of GHIN scores. We surface live Handicap Index, season-low
+// index, course handicap, last-10-round form (L10), 2-year baseline, best round
+// (ceiling), current Form, and a SHARP badge for players at/near their 365-day best.
 function playerMeta(p) {
   const overFlag = p.overMax ? ' <span class="over-flag">OVER 24!</span>' : "";
-  return `HI ${p.hi} (low ${p.lowHi}) &middot; Crs ${p.courseHcp}${overFlag} &middot; L5 avg ${p.recent5} &middot; ${formIcon(p.form)}${sharpBadge(p)}`;
+  return `HI ${p.hi} (low ${p.lowHi}) &middot; Crs ${p.courseHcp}${overFlag} &middot; L10 ${p.l10} &middot; 2yr ${p.avg2yr} &middot; best ${p.best} &middot; ${formIcon(p.form)}${sharpBadge(p)}`;
 }
 
 // ---- Setup: draft order ----
@@ -181,7 +181,7 @@ function setOverride(captainName) {
 function poolCards(flight, captainName) {
   const pool = (flight === "B" ? flightB : flightC)
     .filter(p => !isDrafted(p.name))
-    .sort((a, b) => a.recent5 - b.recent5);
+    .sort((a, b) => a.l10 - b.l10);
   if (!pool.length) return "";
   const rows = pool.map(p => `
     <div class="player-card flight-${p.flight}">
