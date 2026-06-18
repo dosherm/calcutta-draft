@@ -105,6 +105,21 @@
     "overMax": false
   },
   {
+    "name": "Bret Bologna",
+    "flight": "A",
+    "hi": 7.2,
+    "courseHcp": 7,
+    "lowHi": 6.7,
+    "netL10": 3,
+    "net2yr": 3,
+    "netBest": -5,
+    "netLY": 10,
+    "rounds": 201,
+    "form": "Improving",
+    "sharp": true,
+    "overMax": false
+  },
+  {
     "name": "Dan Sherman",
     "flight": "A",
     "hi": 8.2,
@@ -166,7 +181,7 @@
   },
   {
     "name": "Adam Paulson",
-    "flight": "A",
+    "flight": "B",
     "hi": 9.7,
     "courseHcp": 10,
     "lowHi": 9.7,
@@ -345,8 +360,23 @@
     "overMax": false
   },
   {
-    "name": "Matt Bruder",
+    "name": "Blake Donaghue",
     "flight": "B",
+    "hi": 14.7,
+    "courseHcp": 16,
+    "lowHi": 11.8,
+    "netL10": 2,
+    "net2yr": 1,
+    "netBest": -9,
+    "netLY": 3,
+    "rounds": 106,
+    "form": "Stable",
+    "sharp": false,
+    "overMax": false
+  },
+  {
+    "name": "Matt Bruder",
+    "flight": "C",
     "hi": 15.1,
     "courseHcp": 16,
     "lowHi": 14.4,
@@ -361,7 +391,7 @@
   },
   {
     "name": "Timothy Briggs",
-    "flight": "C",
+    "flight": "B",
     "hi": 15.1,
     "courseHcp": 16,
     "lowHi": 13.1,
@@ -402,6 +432,21 @@
     "rounds": 121,
     "form": "Declining",
     "sharp": true,
+    "overMax": false
+  },
+  {
+    "name": "Bob Donaghue",
+    "flight": "C",
+    "hi": 16.0,
+    "courseHcp": 17,
+    "lowHi": 13.5,
+    "netL10": 2,
+    "net2yr": 2,
+    "netBest": -15,
+    "netLY": null,
+    "rounds": 299,
+    "form": "Stable",
+    "sharp": false,
     "overMax": false
   },
   {
