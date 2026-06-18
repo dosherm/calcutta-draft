@@ -318,11 +318,91 @@ function renderPlayers() {
   return blocks;
 }
 
+// ---- Stats Guide ----
+
+const GUIDE_STATS = [
+  {
+    term: "HI", sub: "Handicap Index",
+    def: "The player's current official USGA/WHS Handicap Index — the standard measure of potential ability across any course.",
+    good: "A low HI (single digits) is a genuinely strong ball-striker. But this is a NET event — every player gets strokes to match their handicap, so a low HI doesn't automatically make someone the best draft pick.",
+    bad: "A high HI isn't \"bad\" on its own here. The format is built to level the field, so the gap between players matters less than form and consistency."
+  },
+  {
+    term: "Low", sub: "365-Day Low Index",
+    def: "The lowest Handicap Index they've posted at any point in the last 365 days — their best proven form recently.",
+    good: "If current HI is close to Low (small gap), they're playing near their peak right now — that's a SHARP player (⚡ badge), a confident, low-risk pick.",
+    bad: "A big gap between current HI and Low means they're currently scoring worse than their proven ceiling — rust, a slump, or an injury. Risky, though they could also snap back."
+  },
+  {
+    term: "Crs", sub: "Course Handicap",
+    def: "The actual number of strokes they receive on Youche's white tees (Course Rating 70.4, Slope 127, Par 71), calculated from their HI for this specific course.",
+    good: "Not good or bad by itself — it's just the strokes used to convert gross score to net.",
+    bad: "Watch for the red \"OVER 24!\" flag — their course handicap exceeds the 24-stroke event cap, so it gets capped at 24 on event day."
+  },
+  {
+    term: "L10", sub: "Net-to-Par, Last 10 Rounds",
+    def: "Average net score to par (white tees) over their most recent 10 rounds: on average, how far above or below their own handicap-adjusted par they've been playing lately. E = even, + = over, − = under.",
+    good: "A negative number (e.g. −2) means they've recently been beating their own handicap — playing better than their index suggests. Strong value pick.",
+    bad: "A high positive number (e.g. +5 or more) means recent rounds have been worse than their handicap predicts — due for a correction, or their index is currently too generous for their real level."
+  },
+  {
+    term: "2yr", sub: "Net-to-Par, 2-Year Average",
+    def: "Same net-to-par calculation, averaged over their full 2-year GHIN score history — their long-run \"true talent\" baseline, smoothed past any one hot or cold streak. A few strokes positive is normal here (handicaps are built from a player's best rounds, not their average ones).",
+    good: "A 2yr number close to or below their L10 means current form matches or beats their long-term norm.",
+    bad: "A 2yr number well below (better than) their L10 means they're currently playing worse than their long-term norm — a player to watch for bounce-back, not necessarily avoid."
+  },
+  {
+    term: "Best", sub: "Net-to-Par, Personal Best",
+    def: "Their single best round (lowest net-to-par) over the last 2 years — their ceiling on a hot day.",
+    good: "A strongly negative Best (e.g. −7) shows they're capable of going very low when it clicks — high-upside pick for a calcutta.",
+    bad: "A Best close to E or positive means even their best day was just average for their handicap — lower ceiling, less explosive upside."
+  },
+  {
+    term: "LY", sub: "Net-to-Par, Last Year's Event",
+    def: "Their actual net score to par from this same calcutta event last year (2025-06-21) — direct evidence of how they performed under these exact conditions and pressure. \"n/a\" means they didn't play last year.",
+    good: "A negative LY means they delivered a strong net round in this event last year — a proven performer in this specific setting.",
+    bad: "A big positive LY means they struggled here last year — nerves, an off day, or the format/course not suiting them. Weigh it alongside their other numbers, not in isolation."
+  },
+  {
+    term: "Form", sub: "Improving / Stable / Declining",
+    def: "Compares their last 10 rounds to their prior 20 rounds (rounds 11–30 back). Improving = recent rounds scoring meaningfully better than that baseline; Declining = meaningfully worse; Stable = no clear trend.",
+    good: "Improving (▲) is the green flag — they're trending up right now, often before their handicap has fully caught up to their new level.",
+    bad: "Declining (▼) is the yellow flag — recent results are slipping, which can mean their posted handicap is currently more generous than their real form deserves."
+  },
+  {
+    term: "⚡ SHARP", sub: "Badge",
+    def: "Awarded when a player's current Handicap Index is at or within 0.6 strokes of their 365-day low — they are playing at or very near their best form of the year right now.",
+    good: "SHARP players are playing peak golf at this moment — a confident, \"what you see is what you get\" pick.",
+    bad: "No SHARP badge isn't bad on its own — it just means there's more gap between current form and their proven ceiling, which could break either way."
+  },
+];
+
+function renderGuide() {
+  const cards = GUIDE_STATS.map(s => `
+    <div class="guide-card">
+      <div class="guide-term">${s.term} <span class="guide-sub">${s.sub}</span></div>
+      <div class="guide-def">${s.def}</div>
+      <div class="guide-rating good"><span class="guide-tag good-tag">GOOD</span> ${s.good}</div>
+      <div class="guide-rating bad"><span class="guide-tag bad-tag">WATCH FOR</span> ${s.bad}</div>
+    </div>
+  `).join("");
+
+  return `
+    <div class="guide-intro">
+      <h2>Stats Guide</h2>
+      <p>What each number on a player card means, and how to read it when picking a partner. All net-to-par
+      figures are relative to white-tee par (70.4/127/71) using the player's own handicap — E even, + over, − under.</p>
+    </div>
+    <div class="guide-list">${cards}</div>
+  `;
+}
+
 function render() {
   const app = document.getElementById("app");
   if (activeView === "draft") app.innerHTML = renderDraft();
   else if (activeView === "teams") app.innerHTML = renderTeams();
-  else app.innerHTML = renderPlayers();
+  else if (activeView === "players") app.innerHTML = renderPlayers();
+  else app.innerHTML = renderGuide();
 
   document.querySelectorAll(".pick-btn").forEach(btn => {
     btn.addEventListener("click", () => makePick(btn.dataset.captain, btn.dataset.player));

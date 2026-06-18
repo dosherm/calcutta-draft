@@ -400,3 +400,76 @@ main {
   font-size: 0.88rem;
 }
 .undo-btn:active { background: #eef0f3; }
+
+/* ---- Stats Guide ---- */
+
+.guide-intro {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.guide-intro h2 {
+  margin: 0 0 6px;
+  color: var(--navy);
+  font-size: 1.15rem;
+}
+.guide-intro p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.guide-list { display: flex; flex-direction: column; gap: 10px; }
+
+.guide-card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  border-left: 4px solid var(--gold);
+}
+
+.guide-term {
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+.guide-sub {
+  font-weight: 500;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-left: 6px;
+}
+
+.guide-def {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.guide-rating {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text);
+  margin-top: 6px;
+}
+.guide-rating.good { color: #157a42; }
+.guide-rating.bad { color: #b1342a; }
+
+.guide-tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.guide-tag.good-tag { background: #d8f0e0; color: #157a42; }
+.guide-tag.bad-tag { background: #f7dada; color: #b1342a; }
