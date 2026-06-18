@@ -275,9 +275,49 @@ function renderDraft() {
   `;
 }
 
+function teamsAsText() {
+  const order = state.orderSet ? state.order : flightA.map(a => a.name);
+  const lines = ["Youche CC Calcutta — Teams", ""];
+  order.forEach((name, i) => {
+    const a = findPlayer(name);
+    const team = state.teams[name];
+    const bP = team.b ? findPlayer(team.b) : null;
+    const cP = team.c ? findPlayer(team.c) : null;
+    lines.push(`Team ${i + 1}: ${a.name}`);
+    lines.push(`  A - ${a.name} (HI ${a.hi})`);
+    lines.push(`  B - ${bP ? `${bP.name} (HI ${bP.hi})` : "not yet drafted"}`);
+    lines.push(`  C - ${cP ? `${cP.name} (HI ${cP.hi})` : "not yet drafted"}`);
+    lines.push("");
+  });
+  return lines.join("\n").trim();
+}
+
+function copyTeamsText() {
+  const text = teamsAsText();
+  const btn = document.getElementById("copy-teams-btn");
+  const flash = (label) => {
+    if (!btn) return;
+    const original = btn.textContent;
+    btn.textContent = label;
+    setTimeout(() => { btn.textContent = original; }, 1500);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => flash("Copied!")).catch(() => flash("Copy failed"));
+  } else {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); flash("Copied!"); } catch (e) { flash("Copy failed"); }
+    document.body.removeChild(ta);
+  }
+}
+
 function renderTeams() {
   const order = state.orderSet ? state.order : flightA.map(a => a.name);
-  return order.map(name => {
+  const cards = order.map(name => {
     const a = findPlayer(name);
     const team = state.teams[name];
     const bP = team.b ? findPlayer(team.b) : null;
@@ -291,6 +331,7 @@ function renderTeams() {
       </div>
     `;
   }).join("");
+  return `<button id="copy-teams-btn" class="copy-teams-btn">&#128203; Copy Teams as Text</button>${cards}`;
 }
 
 function renderPlayers() {
@@ -413,6 +454,9 @@ function render() {
 
   const undoBtn = document.getElementById("undo-btn");
   if (undoBtn) undoBtn.addEventListener("click", undoLastPick);
+
+  const copyBtn = document.getElementById("copy-teams-btn");
+  if (copyBtn) copyBtn.addEventListener("click", copyTeamsText);
 
   document.querySelectorAll(".ord-btn").forEach(btn => {
     btn.addEventListener("click", () => {
