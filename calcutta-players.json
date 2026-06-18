@@ -89,7 +89,7 @@
       8.8,
       7.9
     ],
-    "signup_name": "Chris Myers",
+    "signup_name": "Chris Myres",
     "event_flight": "A",
     "course_handicap": 6,
     "over_max": false,
@@ -163,7 +163,7 @@
       16.5,
       9.3
     ],
-    "signup_name": "Marcus Malczewski",
+    "signup_name": "Marc Malczewski",
     "event_flight": "A",
     "course_handicap": 6,
     "over_max": false,
@@ -237,7 +237,7 @@
       8.8,
       8.5
     ],
-    "signup_name": "Richard Amodeo",
+    "signup_name": "Rick Amodeo",
     "event_flight": "A",
     "course_handicap": 7,
     "over_max": false,
@@ -355,7 +355,7 @@
       12.5,
       17.1
     ],
-    "signup_name": "Richard Oliver Jr",
+    "signup_name": "Rick Oliver Jr",
     "event_flight": "A",
     "course_handicap": 10,
     "over_max": false,
@@ -560,45 +560,6 @@
     "net_2yr": 4,
     "net_best": -5,
     "net_ly": null
-  },
-  {
-    "ghin_id": "10408672",
-    "posted_hcp": 10.2,
-    "volatility": 3.18,
-    "recent_diffs": [
-      15.7,
-      14.7,
-      21.8,
-      13.7,
-      13.8,
-      14.8,
-      15.5,
-      10.2,
-      8.7,
-      13.0
-    ],
-    "signup_name": "Eric Newell",
-    "event_flight": "B",
-    "course_handicap": 11,
-    "over_max": false,
-    "low_hi": 9.9,
-    "n_rounds": 70,
-    "form": "Declining",
-    "sharp": true,
-    "baseline_2yr": 14.34,
-    "recent_avg": 14.19,
-    "prior_avg": 13.27,
-    "best_diff": 7.7,
-    "trend_delta": -0.9,
-    "last_year_event": {
-      "diff": 20.1,
-      "gross": 93,
-      "holes": 18
-    },
-    "net_l10": 4,
-    "net_2yr": 5,
-    "net_best": -3,
-    "net_ly": 11
   },
   {
     "ghin_id": "10189461",
@@ -1471,5 +1432,45 @@
     "event_flight": "A",
     "course_handicap": 8,
     "over_max": false
+  },
+  {
+    "signup_name": "Scott Yoder",
+    "ghin_id": "11135860",
+    "posted_hcp": 12.7,
+    "low_hi": 9.4,
+    "gap_to_low": 3.3,
+    "n_rounds": 155,
+    "baseline_2yr": 16.09,
+    "recent_avg": 16.76,
+    "prior_avg": 15.71,
+    "best_diff": 0.6,
+    "volatility": 3.83,
+    "trend_delta": -1.1,
+    "form": "Declining",
+    "sharp": false,
+    "recent_diffs": [
+      13.0,
+      16.5,
+      18.7,
+      17.4,
+      14.4,
+      21.9,
+      13.0,
+      19.6,
+      13.9,
+      19.2
+    ],
+    "last_year_event": {
+      "diff": 11.2,
+      "gross": 83,
+      "holes": 18
+    },
+    "net_l10": 5,
+    "net_2yr": 4,
+    "net_best": -14,
+    "net_ly": -2,
+    "course_handicap": 14,
+    "over_max": false,
+    "event_flight": "B"
   }
 ]

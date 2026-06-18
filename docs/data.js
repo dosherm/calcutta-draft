@@ -30,7 +30,7 @@ const PLAYERS = [
     "overMax": false
   },
   {
-    "name": "Chris Myers",
+    "name": "Chris Myres",
     "flight": "A",
     "hi": 6.0,
     "courseHcp": 6,
@@ -60,7 +60,7 @@ const PLAYERS = [
     "overMax": false
   },
   {
-    "name": "Marcus Malczewski",
+    "name": "Marc Malczewski",
     "flight": "A",
     "hi": 6.3,
     "courseHcp": 6,
@@ -90,7 +90,7 @@ const PLAYERS = [
     "overMax": false
   },
   {
-    "name": "Richard Amodeo",
+    "name": "Rick Amodeo",
     "flight": "A",
     "hi": 7.0,
     "courseHcp": 7,
@@ -135,7 +135,7 @@ const PLAYERS = [
     "overMax": false
   },
   {
-    "name": "Richard Oliver Jr",
+    "name": "Rick Oliver Jr",
     "flight": "A",
     "hi": 9.4,
     "courseHcp": 10,
@@ -222,21 +222,6 @@ const PLAYERS = [
     "rounds": 165,
     "form": "Stable",
     "sharp": false,
-    "overMax": false
-  },
-  {
-    "name": "Eric Newell",
-    "flight": "B",
-    "hi": 10.2,
-    "courseHcp": 11,
-    "lowHi": 9.9,
-    "netL10": 4,
-    "net2yr": 5,
-    "netBest": -3,
-    "netLY": 11,
-    "rounds": 70,
-    "form": "Declining",
-    "sharp": true,
     "overMax": false
   },
   {
@@ -580,6 +565,21 @@ const PLAYERS = [
     "netBest": -5,
     "netLY": null,
     "rounds": 90,
+    "form": "Declining",
+    "sharp": false,
+    "overMax": false
+  },
+  {
+    "name": "Scott Yoder",
+    "flight": "B",
+    "hi": 12.7,
+    "courseHcp": 14,
+    "lowHi": 9.4,
+    "netL10": 5,
+    "net2yr": 4,
+    "netBest": -14,
+    "netLY": -2,
+    "rounds": 155,
     "form": "Declining",
     "sharp": false,
     "overMax": false
