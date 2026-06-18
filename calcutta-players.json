@@ -718,45 +718,6 @@
     "net_ly": 1
   },
   {
-    "ghin_id": "10026488",
-    "posted_hcp": 12.1,
-    "volatility": 3.47,
-    "recent_diffs": [
-      11.2,
-      17.4,
-      9.5,
-      17.2,
-      13.6,
-      11.2,
-      16.2,
-      17.8,
-      19.6,
-      16.2
-    ],
-    "signup_name": "Daniel Darlson",
-    "event_flight": "B",
-    "course_handicap": 13,
-    "over_max": false,
-    "low_hi": 10.0,
-    "n_rounds": 168,
-    "form": "Improving",
-    "sharp": false,
-    "baseline_2yr": 14.39,
-    "recent_avg": 14.99,
-    "prior_avg": 15.92,
-    "best_diff": 5.0,
-    "trend_delta": 0.9,
-    "last_year_event": {
-      "diff": 20.1,
-      "gross": 93,
-      "holes": 18
-    },
-    "net_l10": 3,
-    "net_2yr": 3,
-    "net_best": -8,
-    "net_ly": 9
-  },
-  {
     "ghin_id": "10288717",
     "posted_hcp": 12.1,
     "volatility": 2.88,
@@ -1474,5 +1435,41 @@
     "net_2yr": 6,
     "net_best": -6,
     "net_ly": 6
+  },
+  {
+    "signup_name": "Brian Thomas",
+    "ghin_id": "11317177",
+    "posted_hcp": 8.0,
+    "low_hi": 6.3,
+    "gap_to_low": 1.7,
+    "n_rounds": 90,
+    "baseline_2yr": 11.47,
+    "recent_avg": 13.32,
+    "prior_avg": 10.26,
+    "best_diff": 3.6,
+    "volatility": 3.72,
+    "trend_delta": -3.1,
+    "form": "Declining",
+    "sharp": false,
+    "recent_diffs": [
+      14.0,
+      8.2,
+      10.1,
+      13.1,
+      16.6,
+      14.8,
+      16.4,
+      11.8,
+      12.8,
+      15.4
+    ],
+    "last_year_event": null,
+    "net_l10": 6,
+    "net_2yr": 4,
+    "net_best": -5,
+    "net_ly": null,
+    "event_flight": "A",
+    "course_handicap": 8,
+    "over_max": false
   }
 ]

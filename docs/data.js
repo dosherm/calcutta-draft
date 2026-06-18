@@ -285,21 +285,6 @@ const PLAYERS = [
     "overMax": false
   },
   {
-    "name": "Daniel Darlson",
-    "flight": "B",
-    "hi": 12.1,
-    "courseHcp": 13,
-    "lowHi": 10.0,
-    "netL10": 3,
-    "net2yr": 3,
-    "netBest": -8,
-    "netLY": 9,
-    "rounds": 168,
-    "form": "Improving",
-    "sharp": false,
-    "overMax": false
-  },
-  {
     "name": "Kevin Livesay",
     "flight": "B",
     "hi": 12.1,
@@ -583,5 +568,20 @@ const PLAYERS = [
     "form": "Stable",
     "sharp": true,
     "overMax": true
+  },
+  {
+    "name": "Brian Thomas",
+    "flight": "A",
+    "hi": 8.0,
+    "courseHcp": 8,
+    "lowHi": 6.3,
+    "netL10": 6,
+    "net2yr": 4,
+    "netBest": -5,
+    "netLY": null,
+    "rounds": 90,
+    "form": "Declining",
+    "sharp": false,
+    "overMax": false
   }
 ];
