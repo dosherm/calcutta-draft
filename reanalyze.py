@@ -76,7 +76,11 @@ def index_info(client, ghin):
                         params={"golfer_id": ghin, "page": 1, "per_page": 5})
         g = s["golfers"][0]
         hi = float(g["hi_value"])
-        low = float(g["low_hi"]) if g.get("low_hi") not in (None, "") else hi
+        low_raw = g.get("low_hi")
+        try:
+            low = float(low_raw) if low_raw not in (None, "") else hi
+        except (TypeError, ValueError):
+            low = hi  # e.g. "-" when no 365-day low has been recorded yet
         return hi, low
     except Exception:
         return None, None

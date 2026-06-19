@@ -488,3 +488,56 @@ main {
 }
 .guide-tag.good-tag { background: #d8f0e0; color: #157a42; }
 .guide-tag.bad-tag { background: #f7dada; color: #b1342a; }
+
+/* ---- Draft Analysis ---- */
+
+.an-list { display: flex; flex-direction: column; gap: 10px; }
+
+.an-card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  border-left: 4px solid var(--navy);
+}
+
+.an-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.an-rank {
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--gold);
+  background: var(--navy);
+  padding: 1px 9px;
+  border-radius: 999px;
+}
+.an-team {
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--navy);
+}
+.an-stats {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-left: auto;
+}
+
+.an-players { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.an-player { border-top: 1px dashed var(--border); padding-top: 6px; }
+.an-player:first-child { border-top: none; padding-top: 0; }
+.an-pname { font-weight: 700; font-size: 0.92rem; display: block; }
+.an-pmeta { font-size: 0.76rem; color: var(--muted); }
+
+.an-note {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--text);
+  font-style: italic;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}

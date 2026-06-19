@@ -438,12 +438,53 @@ function renderGuide() {
   `;
 }
 
+// ---- Draft Analysis (actual 2026 draft results) ----
+
+function fmtNetSigned(n) {
+  if (n === null || n === undefined) return "n/a";
+  if (n === 0) return "E";
+  return n > 0 ? `+${n}` : `${n}`;
+}
+
+function renderAnalysis() {
+  const cards = ANALYSIS_TEAMS.map(t => {
+    const players = t.members.map(m => `
+      <div class="an-player">
+        <span class="an-pname">${m.name}</span>
+        <span class="an-pmeta">HI ${m.hi} &middot; L10 ${fmtNetSigned(m.l10)} &middot; 2yr ${fmtNetSigned(m.yr2)} &middot; best ${fmtNetSigned(m.best)} &middot; LY ${fmtNetSigned(m.ly)} &middot; ${formIcon(m.form)}${m.sharp ? ' <span class="sharp-badge">&#9889; SHARP</span>' : ""}</span>
+      </div>
+    `).join("");
+    return `
+      <div class="an-card">
+        <div class="an-head">
+          <span class="an-rank">#${t.rank}</span>
+          <span class="an-team">Team ${t.team}</span>
+          <span class="an-stats">L10 ${fmtNetSigned(t.l10)} &middot; 2yr ${fmtNetSigned(t.yr2)} &middot; ${t.imp}&#9650;/${t.dec}&#9660;</span>
+        </div>
+        <div class="an-players">${players}</div>
+        <div class="an-note">${t.note}</div>
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <div class="guide-intro">
+      <h2>Draft Analysis</h2>
+      <p>Ranking of the 14 actual drafted teams, strongest to weakest, based on combined net-to-par form (L10 &amp;
+      2-year), scoring ceiling, momentum (Improving/Declining), and SHARP players. Lower combined net-to-par is
+      stronger. This is a snapshot analysis of the completed draft, not a live/editable tool.</p>
+    </div>
+    <div class="an-list">${cards}</div>
+  `;
+}
+
 function render() {
   const app = document.getElementById("app");
   if (activeView === "draft") app.innerHTML = renderDraft();
   else if (activeView === "teams") app.innerHTML = renderTeams();
   else if (activeView === "players") app.innerHTML = renderPlayers();
-  else app.innerHTML = renderGuide();
+  else if (activeView === "guide") app.innerHTML = renderGuide();
+  else app.innerHTML = renderAnalysis();
 
   document.querySelectorAll(".pick-btn").forEach(btn => {
     btn.addEventListener("click", () => makePick(btn.dataset.captain, btn.dataset.player));
