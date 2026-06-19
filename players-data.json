@@ -583,5 +583,50 @@
     "form": "Declining",
     "sharp": false,
     "overMax": false
+  },
+  {
+    "name": "Tim Jipping",
+    "flight": "C",
+    "hi": 15.8,
+    "courseHcp": 17,
+    "lowHi": 15.8,
+    "netL10": 4,
+    "net2yr": 4,
+    "netBest": -2,
+    "netLY": null,
+    "rounds": 16,
+    "form": "Declining",
+    "sharp": true,
+    "overMax": false
+  },
+  {
+    "name": "Aaron Graddy",
+    "flight": "A",
+    "hi": 10.5,
+    "courseHcp": 11,
+    "lowHi": 9.0,
+    "netL10": 2,
+    "net2yr": 3,
+    "netBest": -4,
+    "netLY": 6,
+    "rounds": 138,
+    "form": "Improving",
+    "sharp": false,
+    "overMax": false
+  },
+  {
+    "name": "Tim Webb",
+    "flight": "B",
+    "hi": 13.6,
+    "courseHcp": 15,
+    "lowHi": 12.7,
+    "netL10": 2,
+    "net2yr": 3,
+    "netBest": -6,
+    "netLY": null,
+    "rounds": 26,
+    "form": "Improving",
+    "sharp": false,
+    "overMax": false
   }
 ]
