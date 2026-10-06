@@ -1,7 +1,7 @@
 [
-  {"rank": "1",   "name": "Chris Myres",       "events": 6,  "wins": 2, "points": 240},
-  {"rank": "2",   "name": "Wendell Carter",    "events": 10, "wins": 1, "points": 210},
-  {"rank": "T3",  "name": "Dan Sherman",       "events": 9,  "wins": 4, "points": 200},
+  {"rank": "1",   "name": "Chris Myres",       "events": 6,  "wins": 2, "points": 240, "captain": 0},
+  {"rank": "2",   "name": "Wendell Carter",    "events": 10, "wins": 1, "points": 210, "status": "declined"},
+  {"rank": "T3",  "name": "Dan Sherman",       "events": 9,  "wins": 4, "points": 200, "captain": 1},
   {"rank": "T3",  "name": "Kevin Rosenthal",   "events": 7,  "wins": 3, "points": 200},
   {"rank": "5",   "name": "Van Huffine",       "events": 6,  "wins": 2, "points": 190},
   {"rank": "6",   "name": "Dean Ricci",        "events": 7,  "wins": 1, "points": 175},

@@ -18,7 +18,8 @@ const PLAYERS = [
     "sharp": false,
     "volatility": 2.71,
     "basis": "2yr",
-    "asof": "Jun 2026"
+    "asof": "Jun 2026",
+    "captain": 0
   },
   {
     "name": "Wendell Carter",
@@ -38,7 +39,8 @@ const PLAYERS = [
     "sharp": true,
     "volatility": 3.62,
     "basis": "2yr",
-    "asof": "Jun 2026"
+    "asof": "Jun 2026",
+    "status": "declined"
   },
   {
     "name": "Dan Sherman",
@@ -58,7 +60,8 @@ const PLAYERS = [
     "sharp": false,
     "volatility": 3.37,
     "basis": "2yr",
-    "asof": "Jun 2026"
+    "asof": "Jun 2026",
+    "captain": 1
   },
   {
     "name": "Kevin Rosenthal",

@@ -1,7 +1,7 @@
 // Youche Cup — invite tracker + automatic two-team balancer
 // Single-device, localStorage-persisted. PLAYERS comes from data.js (youche_cup.py).
 
-const STORAGE_KEY = "youche-cup-state-v1";
+const STORAGE_KEY = "youche-cup-state-v2";
 const TEAM_SIZE = 12;
 const FIELD = TEAM_SIZE * 2;
 
@@ -15,14 +15,31 @@ function proj(p) {
   return Math.round((0.6 * a + 0.4 * b) * 10) / 10;
 }
 
+// Captains (data.js "captain": 0 | 1) are in, locked to their own team, and
+// the teams are named after them.
+const CAPTAINS = [0, 1].map(t => PLAYERS.find(p => p.captain === t));
+const isCaptain = name => CAPTAINS.some(c => c && c.name === name);
+
 function defaultState() {
+  // The top 24 who haven't already said no get invited; the rest are alternates
+  let invited = 0;
+  const status = Object.fromEntries(PLAYERS.map(p => {
+    if (p.captain != null) { invited++; return [p.name, "accepted"]; }
+    if (p.status === "declined") return [p.name, "declined"];
+    return [p.name, invited++ < FIELD ? "invited" : "alternate"];
+  }));
   return {
-    status: Object.fromEntries(PLAYERS.map((p, i) => [p.name, i < FIELD ? "invited" : "alternate"])),
+    status,
     includePending: true,
     mode: "both",
-    teamNames: ["Team 1", "Team 2"],
-    pins: {},   // name -> 0 | 1
+    teamNames: CAPTAINS.map((c, t) => c ? `Team ${c.name.split(" ").slice(-1)[0]}` : `Team ${t + 1}`),
+    pins: {},   // name -> 0 | 1  (captains are always locked; see effectivePin)
   };
+}
+
+function effectivePin(name) {
+  const c = byName[name];
+  return c && c.captain != null ? c.captain : state.pins[name];
 }
 
 function loadState() {
@@ -38,6 +55,7 @@ function loadState() {
   return defaultState();
 }
 
+const byName = Object.fromEntries(PLAYERS.map(p => [p.name, p]));
 let state = loadState();
 let activeView = "roster";
 let playerSort = "proj";
@@ -46,7 +64,6 @@ function saveState() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
 }
 
-const byName = Object.fromEntries(PLAYERS.map(p => [p.name, p]));
 const st = name => state.status[name];
 
 // ---- Formatting (same conventions as the Calcutta tracker) ----
@@ -96,7 +113,9 @@ function playerMeta(p) {
 // capped at 24 in Cup points order.
 function fieldPlayers() {
   const ok = s => s === "accepted" || (state.includePending && s === "invited");
-  return PLAYERS.filter(p => ok(st(p.name))).slice(0, FIELD);
+  const caps = PLAYERS.filter(p => isCaptain(p.name));
+  const rest = PLAYERS.filter(p => !isCaptain(p.name) && ok(st(p.name)));
+  return [...caps, ...rest.slice(0, FIELD - caps.length)];
 }
 
 function counts() {
@@ -149,7 +168,7 @@ function balanceTeams(players) {
   };
 
   const sizes = [Math.ceil(n / 2), Math.floor(n / 2)];
-  const pinned = players.map(p => state.pins[p.name]);
+  const pinned = players.map(p => effectivePin(p.name));
   // Honor pins only while the pinned team still has room
   const room = [...sizes];
   const fixed = pinned.map(t => {
@@ -190,7 +209,8 @@ function balanceTeams(players) {
 
   const teams = [[], []];
   (best || []).forEach((t, i) => teams[t].push(players[i]));
-  teams.forEach(t => t.sort((a, b) => (a.hi ?? 99) - (b.hi ?? 99)));
+  teams.forEach(t => t.sort((a, b) =>
+    (isCaptain(b.name) - isCaptain(a.name)) || (a.hi ?? 99) - (b.hi ?? 99)));
   return teams;
 }
 
@@ -229,6 +249,7 @@ function togglePin(name, team) {
 // ---- Roster view ----
 
 function statusButtons(p) {
+  if (isCaptain(p.name)) return '<span class="captain-badge">CAPTAIN</span>';
   const s = st(p.name);
   if (s === "alternate") {
     return `
@@ -248,7 +269,7 @@ function rosterCard(p) {
   return `
     <div class="player-card st-${s}">
       <div class="pinfo">
-        <div class="pname"><span class="cup-rank">${p.rank}</span>${p.name}</div>
+        <div class="pname"><span class="cup-rank">${p.rank}</span>${p.name}${isCaptain(p.name) ? ` <span class="cap-c">C</span>` : ""}</div>
         <div class="cup-pts">${pts} &middot; ${p.wins} win${p.wins === 1 ? "" : "s"} in ${p.events} events</div>
         <div class="pmeta">${playerMeta(p)}</div>
       </div>
@@ -334,16 +355,17 @@ function renderTeams() {
   const cards = teams.map((team, ti) => {
     const rows = team.map(p => {
       const pin = state.pins[p.name] === ti;
+      const ctrls = isCaptain(p.name)
+        ? '<span class="captain-badge">CAPTAIN</span>'
+        : `<button class="pin-btn${pin ? " on" : ""}" data-pin="${ti}" data-name="${p.name}" title="Lock to this team">&#128204;</button>
+            <button class="pin-btn" data-pin="${1 - ti}" data-name="${p.name}" title="Lock to the other team">&#8644;</button>`;
       return `
         <div class="tm-row${st(p.name) === "invited" ? " pending" : ""}">
           <div>
-            <div class="tm-name">${p.name}</div>
+            <div class="tm-name">${p.name}${isCaptain(p.name) ? ` <span class="cap-c">C</span>` : ""}</div>
             <div class="tm-meta">HI ${p.hi ?? "n/a"} &middot; Crs ${p.courseHcp ?? "n/a"} &middot; Proj ${fmtNet1(proj(p))} &middot; ${p.form || ""}${p.sharp ? " &#9889;" : ""}</div>
           </div>
-          <span>
-            <button class="pin-btn${pin ? " on" : ""}" data-pin="${ti}" data-name="${p.name}" title="Lock to this team">&#128204;</button>
-            <button class="pin-btn" data-pin="${1 - ti}" data-name="${p.name}" title="Lock to the other team">&#8644;</button>
-          </span>
+          <span>${ctrls}</span>
         </div>`;
     }).join("");
     return `
@@ -365,7 +387,7 @@ function renderTeams() {
     <button id="copy-teams-btn" class="copy-teams-btn">&#128203; Copy Teams as Text</button>
     ${clearPins}
     <div class="teams-grid">${cards}</div>
-    <p class="tm-meta" style="margin-top:12px">&#128204; locks a player (e.g. a captain) to their team; &#8644; locks them to the other team. Everyone else is placed automatically.</p>
+    <p class="tm-meta" style="margin-top:12px">Captains are fixed to their own team. &#128204; locks another player to their team; &#8644; locks them to the other team. Everyone else is placed automatically.</p>
   `;
 }
 
@@ -375,7 +397,7 @@ function teamsAsText() {
   teams.forEach((team, ti) => {
     const s = teamStats(team);
     lines.push(`${state.teamNames[ti]} (avg HI ${fmt1(s.avgHi)})`);
-    team.forEach(p => lines.push(`  ${p.name} (HI ${p.hi ?? "n/a"})${st(p.name) === "invited" ? " - pending" : ""}`));
+    team.forEach(p => lines.push(`  ${p.name}${isCaptain(p.name) ? " (C)" : ""} (HI ${p.hi ?? "n/a"})${st(p.name) === "invited" ? " - pending" : ""}`));
     lines.push("");
   });
   return lines.join("\n").trim();
