@@ -1,7 +1,7 @@
-// Youche Cup — invite tracker + automatic two-team balancer
+// Youche Cup — invite tracker + live captains' draft
 // Single-device, localStorage-persisted. PLAYERS comes from data.js (youche_cup.py).
 
-const STORAGE_KEY = "youche-cup-state-v2";
+const STORAGE_KEY = "youche-cup-state-v3";
 const TEAM_SIZE = 12;
 const FIELD = TEAM_SIZE * 2;
 
@@ -15,10 +15,11 @@ function proj(p) {
   return Math.round((0.6 * a + 0.4 * b) * 10) / 10;
 }
 
-// Captains (data.js "captain": 0 | 1) are in, locked to their own team, and
-// the teams are named after them.
+// Captains (data.js "captain": 0 | 1) are in, head their own team, and the
+// teams are named after them.
 const CAPTAINS = [0, 1].map(t => PLAYERS.find(p => p.captain === t));
 const isCaptain = name => CAPTAINS.some(c => c && c.name === name);
+const byName = Object.fromEntries(PLAYERS.map(p => [p.name, p]));
 
 function defaultState() {
   // The top 24 who haven't already said no get invited; the rest are alternates
@@ -30,16 +31,14 @@ function defaultState() {
   }));
   return {
     status,
-    includePending: true,
-    mode: "both",
     teamNames: CAPTAINS.map((c, t) => c ? `Team ${c.name.split(" ").slice(-1)[0]}` : `Team ${t + 1}`),
-    pins: {},   // name -> 0 | 1  (captains are always locked; see effectivePin)
+    draft: {
+      started: false,
+      first: 0,            // team index with the first pick
+      format: "snake",     // "snake" (1-2-2-2…) or "alternate" (1-1-1…)
+      picks: [],           // [{team, name}] in pick order
+    },
   };
-}
-
-function effectivePin(name) {
-  const c = byName[name];
-  return c && c.captain != null ? c.captain : state.pins[name];
 }
 
 function loadState() {
@@ -55,10 +54,10 @@ function loadState() {
   return defaultState();
 }
 
-const byName = Object.fromEntries(PLAYERS.map(p => [p.name, p]));
 let state = loadState();
 let activeView = "roster";
-let playerSort = "proj";
+let playerSort = "rank";
+let poolSort = "rank";
 
 function saveState() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
@@ -101,21 +100,25 @@ function limitedTag(p) {
   return p.basis === "limited" ? '<span class="limited-tag" title="Only last ~20 rounds available; refresh GHIN for 2-year data">20-rd data</span>' : "";
 }
 
+function capTag(p) {
+  return isCaptain(p.name) ? ' <span class="cap-c">C</span>' : "";
+}
+
 function playerMeta(p) {
   if (p.hi == null) return "No GHIN data";
   const low = p.lowHi != null ? ` (low ${p.lowHi})` : "";
   return `HI ${p.hi}${low} &middot; Crs ${p.courseHcp} &middot; L10 ${fmtNet(p.netL10)} &middot; 2yr ${fmtNet(p.net2yr)} &middot; best ${fmtNet(p.netBest)} &middot; ${formIcon(p.form)}${sharpBadge(p)} &middot; <span class="proj">Proj ${fmtNet1(proj(p))}</span>${limitedTag(p)}`;
 }
 
-// ---- Field selection ----
+const sorters = {
+  rank: (a, b) => PLAYERS.indexOf(a) - PLAYERS.indexOf(b),
+  hi: (a, b) => (a.hi ?? 99) - (b.hi ?? 99),
+  proj: (a, b) => (proj(a) ?? 99) - (proj(b) ?? 99) || (a.netBest ?? 99) - (b.netBest ?? 99),
+};
 
-// Players who make the teams: accepted (plus pending invitees when projecting),
-// capped at 24 in Cup points order.
-function fieldPlayers() {
-  const ok = s => s === "accepted" || (state.includePending && s === "invited");
-  const caps = PLAYERS.filter(p => isCaptain(p.name));
-  const rest = PLAYERS.filter(p => !isCaptain(p.name) && ok(st(p.name)));
-  return [...caps, ...rest.slice(0, FIELD - caps.length)];
+function sortSeg(current, attr) {
+  const seg = (val, label) => `<button class="${current === val ? "on" : ""}" data-${attr}="${val}">${label}</button>`;
+  return `<span class="seg">${seg("rank", "Cup points")}${seg("hi", "Handicap")}${seg("proj", "Proj net")}</span>`;
 }
 
 function counts() {
@@ -124,124 +127,69 @@ function counts() {
   return c;
 }
 
-// ---- Balancer ----
+// ---- Draft model ----
 
-function mulberry32(a) {
-  return function () {
-    a |= 0; a = a + 0x6D2B79F5 | 0;
-    let t = Math.imul(a ^ a >>> 15, 1 | a);
-    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-  };
-}
+const PICKS_PER_TEAM = TEAM_SIZE - 1;   // captains are already on their teams
+const TOTAL_PICKS = PICKS_PER_TEAM * 2;
 
-function hashStr(s) {
-  let h = 2166136261;
-  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
-  return h >>> 0;
-}
-
-const mean = a => a.length ? a.reduce((s, x) => s + x, 0) / a.length : 0;
-const sd = a => {
-  if (a.length < 2) return 0;
-  const m = mean(a);
-  return Math.sqrt(a.reduce((s, x) => s + (x - m) ** 2, 0) / (a.length - 1));
-};
-
-function balanceTeams(players) {
-  const n = players.length;
-  const hi = players.map(p => p.hi ?? 0);
-  const pj = players.map(p => proj(p) ?? 0);
-  const sHi = sd(hi) || 1, sPj = sd(pj) || 1;
-  const mode = state.mode;
-
-  const cost = assign => {
-    const t = [[], []], u = [[], []];
-    assign.forEach((team, i) => { t[team].push(hi[i]); u[team].push(pj[i]); });
-    const dHi = Math.abs(mean(t[0]) - mean(t[1])) / sHi;
-    const dPj = Math.abs(mean(u[0]) - mean(u[1])) / sPj;
-    // Small term keeps the spread of handicaps similar so match-play pairings line up
-    const dSpread = Math.abs(sd(t[0]) - sd(t[1])) / sHi;
-    if (mode === "hcp") return dHi + 0.1 * dSpread;
-    if (mode === "net") return dPj + 0.1 * dSpread;
-    return dHi + dPj + 0.1 * dSpread;
-  };
-
-  const sizes = [Math.ceil(n / 2), Math.floor(n / 2)];
-  const pinned = players.map(p => effectivePin(p.name));
-  // Honor pins only while the pinned team still has room
-  const room = [...sizes];
-  const fixed = pinned.map(t => {
-    if (t === 0 || t === 1) { if (room[t] > 0) { room[t]--; return t; } }
-    return null;
-  });
-  const free = fixed.map((t, i) => t === null ? i : -1).filter(i => i >= 0);
-
-  const rng = mulberry32(hashStr(players.map(p => p.name).join("|") + mode + JSON.stringify(fixed)));
-  let best = null, bestCost = Infinity;
-
-  for (let r = 0; r < 60; r++) {
-    const order = [...free];
-    for (let i = order.length - 1; i > 0; i--) {
-      const j = Math.floor(rng() * (i + 1));
-      [order[i], order[j]] = [order[j], order[i]];
-    }
-    const assign = [...fixed];
-    order.forEach((idx, k) => { assign[idx] = k < room[0] ? 0 : 1; });
-
-    let c = cost(assign);
-    let improved = true;
-    while (improved) {
-      improved = false;
-      for (let a = 0; a < free.length; a++) {
-        for (let b = a + 1; b < free.length; b++) {
-          const i = free[a], j = free[b];
-          if (assign[i] === assign[j]) continue;
-          [assign[i], assign[j]] = [assign[j], assign[i]];
-          const c2 = cost(assign);
-          if (c2 < c - 1e-9) { c = c2; improved = true; }
-          else [assign[i], assign[j]] = [assign[j], assign[i]];
-        }
-      }
-    }
-    if (c < bestCost) { bestCost = c; best = assign; }
+// Team index for each pick slot. Snake: A, B B, A A, B B… Alternate: A B A B…
+function pickSequence() {
+  const { first, format } = state.draft;
+  const second = 1 - first;
+  const seq = [];
+  for (let i = 0; i < TOTAL_PICKS; i++) {
+    if (format === "alternate") seq.push(i % 2 === 0 ? first : second);
+    else seq.push(Math.floor((i + 1) / 2) % 2 === 0 ? first : second);
   }
-
-  const teams = [[], []];
-  (best || []).forEach((t, i) => teams[t].push(players[i]));
-  teams.forEach(t => t.sort((a, b) =>
-    (isCaptain(b.name) - isCaptain(a.name)) || (a.hi ?? 99) - (b.hi ?? 99)));
-  return teams;
+  return seq;
 }
 
-function teamStats(team) {
-  const valid = team.filter(p => p.hi != null);
-  return {
-    n: team.length,
-    avgHi: mean(valid.map(p => p.hi)),
-    totCrs: valid.reduce((s, p) => s + p.courseHcp, 0),
-    avgProj: mean(valid.map(p => proj(p)).filter(x => x != null)),
-    avgL10: mean(valid.map(p => p.netL10).filter(x => x != null)),
-    avg2yr: mean(valid.map(p => p.net2yr).filter(x => x != null)),
-    imp: team.filter(p => p.form === "Improving").length,
-    dec: team.filter(p => p.form === "Declining").length,
-    sharp: team.filter(p => p.sharp).length,
-    pending: team.filter(p => st(p.name) === "invited").length,
-  };
+function teamRoster(t) {
+  const cap = CAPTAINS[t];
+  return [...(cap ? [cap] : []), ...state.draft.picks.filter(p => p.team === t).map(p => byName[p.name])];
+}
+
+const isDrafted = name => isCaptain(name) || state.draft.picks.some(p => p.name === name);
+
+// Accepted and still-pending invitees can be drafted; alternates and declines can't.
+function draftPool() {
+  return PLAYERS.filter(p => !isDrafted(p.name) && ["accepted", "invited"].includes(st(p.name)));
+}
+
+// The team owed the earliest slot in the sequence. Normally that's just the next
+// slot, but if a drafted player drops out, his team gets the next pick it's owed.
+function onTheClock() {
+  const made = [0, 1].map(t => state.draft.picks.filter(p => p.team === t).length);
+  const due = [0, 0];
+  for (const t of pickSequence()) {
+    due[t]++;
+    if (due[t] > made[t]) return t;
+  }
+  return null;
 }
 
 // ---- Actions ----
 
 function setStatus(name, s) {
   state.status[name] = s;
-  if (s === "declined" || s === "alternate") delete state.pins[name];
+  // A drafted player who drops out comes off his team; that captain picks again later
+  if (s === "declined" || s === "alternate") {
+    state.draft.picks = state.draft.picks.filter(p => p.name !== name);
+  }
   saveState();
   render();
 }
 
-function togglePin(name, team) {
-  if (state.pins[name] === team) delete state.pins[name];
-  else state.pins[name] = team;
+function makePick(name) {
+  const team = onTheClock();
+  if (team === null || isDrafted(name)) return;
+  state.draft.picks.push({ team, name });
+  saveState();
+  render();
+}
+
+function undoPick() {
+  state.draft.picks.pop();
   saveState();
   render();
 }
@@ -252,8 +200,7 @@ function statusButtons(p) {
   if (isCaptain(p.name)) return '<span class="captain-badge">CAPTAIN</span>';
   const s = st(p.name);
   if (s === "alternate") {
-    return `
-      <button class="st-btn invite-next" data-status="invited" data-name="${p.name}">Invite</button>`;
+    return `<button class="st-btn invite-next" data-status="invited" data-name="${p.name}">Invite</button>`;
   }
   const btn = (val, label) => {
     const on = s === val;
@@ -263,13 +210,18 @@ function statusButtons(p) {
   return btn("accepted", "&#10003; In") + btn("declined", "&#10007; Out");
 }
 
+function draftedLabel(p) {
+  const pk = state.draft.picks.find(x => x.name === p.name);
+  return pk ? ` <span class="drafted-to">${state.teamNames[pk.team]}</span>` : "";
+}
+
 function rosterCard(p) {
   const s = st(p.name);
   const pts = p.points != null ? `${p.points} pts` : "pts n/a";
   return `
     <div class="player-card st-${s}">
       <div class="pinfo">
-        <div class="pname"><span class="cup-rank">${p.rank}</span>${p.name}${isCaptain(p.name) ? ` <span class="cap-c">C</span>` : ""}</div>
+        <div class="pname"><span class="cup-rank">${p.rank}</span>${p.name}${capTag(p)}${draftedLabel(p)}</div>
         <div class="cup-pts">${pts} &middot; ${p.wins} win${p.wins === 1 ? "" : "s"} in ${p.events} events</div>
         <div class="pmeta">${playerMeta(p)}</div>
       </div>
@@ -284,11 +236,11 @@ function renderRoster() {
 
   let notice;
   if (c.accepted >= FIELD) {
-    notice = `<div class="notice ok">Field is full: ${c.accepted} players have accepted.${c.accepted > FIELD ? ` Only the top ${FIELD} by Cup points are placed on teams.` : ""}</div>`;
+    notice = `<div class="notice ok">Field is full: ${c.accepted} players have accepted.</div>`;
   } else if (open > 0) {
     notice = `<div class="notice">${open} spot${open > 1 ? "s" : ""} open after declines. Next up: <b>${nextAlts.map(p => p.name).join(", ") || "no alternates left"}</b>.</div>`;
   } else {
-    notice = `<div class="notice">${c.invited} invitation${c.invited === 1 ? "" : "s"} still waiting on an answer. Teams use ${state.includePending ? "accepted + pending" : "accepted only"} players and rebalance automatically.</div>`;
+    notice = `<div class="notice">${c.invited} invitation${c.invited === 1 ? "" : "s"} still waiting on an answer.</div>`;
   }
 
   const section = (label, list) => list.length
@@ -308,96 +260,127 @@ function renderRoster() {
   `;
 }
 
+// ---- Draft view ----
+
+function renderSetup() {
+  const d = state.draft;
+  const name = t => state.teamNames[t];
+  const seg = (val, label) => `<button class="${d.format === val ? "on" : ""}" data-format="${val}">${label}</button>`;
+  const firstBtn = t => `<button class="${d.first === t ? "on" : ""}" data-first="${t}">${name(t)}</button>`;
+  const order = pickSequence().slice(0, 8).map(t => name(t).replace(/^Team /, "")).join(", ");
+  const c = counts();
+
+  return `
+    <div class="setup-intro">
+      <h2>Set Up the Draft</h2>
+      <p>${CAPTAINS.map(cp => cp ? cp.name : "?").join(" and ")} each draft ${PICKS_PER_TEAM} players for a team of ${TEAM_SIZE}.
+      Accepted players and invitees still waiting to answer can be drafted.</p>
+    </div>
+    <div class="ctrl-row">
+      <label>First pick</label>
+      <span class="seg">${firstBtn(0)}${firstBtn(1)}</span>
+      <button id="coin-btn" class="st-btn">&#129689; Flip a coin</button>
+    </div>
+    <div class="ctrl-row">
+      <label>Format</label>
+      <span class="seg">${seg("snake", "Snake (1-2-2…)")}${seg("alternate", "Alternate (1-1…)")}</span>
+      <div class="tm-meta" style="width:100%">Order: ${order}…</div>
+    </div>
+    ${c.invited ? `<div class="notice">${c.invited} invitee${c.invited === 1 ? " hasn't" : "s haven't"} answered yet. They'll still show in the draft pool, marked pending.</div>` : ""}
+    <button id="start-btn" class="big-btn start">Start Draft &#8594;</button>
+  `;
+}
+
+function renderDraft() {
+  if (!state.draft.started) return renderSetup();
+
+  const picksDone = state.draft.picks.length;
+  const team = onTheClock();
+  const last = state.draft.picks[picksDone - 1];
+  const undoBtn = last
+    ? `<button id="undo-btn" class="undo-btn">&#8630; Undo last pick (${last.name})</button>` : "";
+
+  if (team === null) {
+    return `<div class="draft-complete">
+      <h2>Draft Complete</h2>
+      <p>Both teams have ${TEAM_SIZE} players. See the Teams tab.</p>
+    </div>${undoBtn}`;
+  }
+
+  const pool = draftPool().sort(sorters[poolSort]);
+  const seq = pickSequence();
+  const nextUp = seq.slice(picksDone + 1, picksDone + 4).map(t => state.teamNames[t].replace(/^Team /, "")).join(", ");
+  const cards = pool.map(p => `
+    <div class="player-card st-${st(p.name)}">
+      <div class="pinfo">
+        <div class="pname"><span class="cup-rank">${p.rank}</span>${p.name}${st(p.name) === "invited" ? ' <span class="pending-tag">pending</span>' : ""}</div>
+        <div class="pmeta">${playerMeta(p)}</div>
+      </div>
+      <button class="pick-btn" data-pick="${p.name}">Draft</button>
+    </div>`).join("");
+
+  return `
+    <div class="draft-status">
+      <div class="pick-label">Pick ${picksDone + 1} of ${TOTAL_PICKS}</div>
+      <div class="on-clock">${state.teamNames[team]}</div>
+      <div class="on-clock-sub">${CAPTAINS[team] ? CAPTAINS[team].name : ""} is on the clock &middot; ${teamRoster(team).length} of ${TEAM_SIZE} on the team${nextUp ? ` &middot; then ${nextUp}` : ""}</div>
+    </div>
+    ${undoBtn}
+    <div class="ctrl-row"><label>Sort by</label>${sortSeg(poolSort, "poolsort")}</div>
+    <div class="section-label">Available (${pool.length})</div>
+    ${cards || "<p>No players left in the pool. Invite alternates from the Roster tab.</p>"}
+  `;
+}
+
 // ---- Teams view ----
 
-function teamsControls() {
-  const seg = (val, label) => `<button class="${state.mode === val ? "on" : ""}" data-mode="${val}">${label}</button>`;
-  return `
-    <div class="ctrl-row">
-      <label>Balance on</label>
-      <span class="seg">${seg("both", "Both")}${seg("hcp", "Handicap")}${seg("net", "Net form")}</span>
-      <span class="chk"><input type="checkbox" id="pending-chk" ${state.includePending ? "checked" : ""}> Include pending invites</span>
-    </div>`;
+function teamStats(team) {
+  const valid = team.filter(p => p.hi != null);
+  return {
+    n: team.length,
+    avgHi: valid.length ? valid.reduce((s, p) => s + p.hi, 0) / valid.length : null,
+    totCrs: valid.reduce((s, p) => s + p.courseHcp, 0),
+  };
 }
 
 function renderTeams() {
-  const field = fieldPlayers();
-  const teams = balanceTeams(field);
-  const s = teams.map(teamStats);
-
-  const short = FIELD - field.length;
-  const notice = short > 0
-    ? `<div class="notice">${field.length} players in the field, ${short} short of ${FIELD}. ${state.includePending ? "Invite alternates from the Roster tab." : "Turn on “Include pending invites” to project the full field."}</div>`
-    : (s[0].pending + s[1].pending
-      ? `<div class="notice">Projection: includes ${s[0].pending + s[1].pending} player(s) who haven't answered yet.</div>`
-      : `<div class="notice ok">All ${FIELD} players confirmed.</div>`);
-
-  const row = (label, f, better) => {
-    const v = [f(s[0]), f(s[1])];
-    return `<tr><td>${label}</td><td>${v[0]}</td><td>${v[1]}</td></tr>`;
-  };
-  const balance = `
-    <div class="balance-card">
-      <b>Balance check</b>
-      <table>
-        <tr><th></th><th>${state.teamNames[0]}</th><th>${state.teamNames[1]}</th></tr>
-        ${row("Players", t => t.n)}
-        ${row("Avg HI", t => fmt1(t.avgHi))}
-        ${row("Total course hcp", t => t.totCrs)}
-        ${row("Avg Proj net", t => fmtNet1(t.avgProj))}
-        ${row("Avg L10 net", t => fmtNet1(t.avgL10))}
-        ${row("Avg 2yr net", t => fmtNet1(t.avg2yr))}
-        ${row("Improving / Declining", t => `${t.imp} / ${t.dec}`)}
-        ${row("SHARP", t => t.sharp)}
-      </table>
-    </div>`;
-
-  const cards = teams.map((team, ti) => {
-    const rows = team.map(p => {
-      const pin = state.pins[p.name] === ti;
-      const ctrls = isCaptain(p.name)
-        ? '<span class="captain-badge">CAPTAIN</span>'
-        : `<button class="pin-btn${pin ? " on" : ""}" data-pin="${ti}" data-name="${p.name}" title="Lock to this team">&#128204;</button>
-            <button class="pin-btn" data-pin="${1 - ti}" data-name="${p.name}" title="Lock to the other team">&#8644;</button>`;
+  const cards = [0, 1].map(t => {
+    const roster = teamRoster(t);
+    const s = teamStats(roster);
+    const rows = roster.map(p => {
+      const pickNo = state.draft.picks.findIndex(x => x.name === p.name);
+      const label = isCaptain(p.name) ? "C" : `#${pickNo + 1}`;
       return `
         <div class="tm-row${st(p.name) === "invited" ? " pending" : ""}">
           <div>
-            <div class="tm-name">${p.name}${isCaptain(p.name) ? ` <span class="cap-c">C</span>` : ""}</div>
-            <div class="tm-meta">HI ${p.hi ?? "n/a"} &middot; Crs ${p.courseHcp ?? "n/a"} &middot; Proj ${fmtNet1(proj(p))} &middot; ${p.form || ""}${p.sharp ? " &#9889;" : ""}</div>
+            <div class="tm-name"><span class="cup-rank">${label}</span>${p.name}</div>
+            <div class="tm-meta">HI ${p.hi ?? "n/a"} &middot; Crs ${p.courseHcp ?? "n/a"} &middot; L10 ${fmtNet(p.netL10)} &middot; 2yr ${fmtNet(p.net2yr)} &middot; ${p.form || ""}${p.sharp ? " &#9889;" : ""}</div>
           </div>
-          <span>${ctrls}</span>
         </div>`;
     }).join("");
+    const empty = TEAM_SIZE - roster.length;
     return `
-      <div class="cup-team t${ti}">
-        <input class="team-name" data-team="${ti}" value="${state.teamNames[ti].replace(/"/g, "&quot;")}">
-        <div class="team-totals">${s[ti].n} players &middot; avg HI <b>${fmt1(s[ti].avgHi)}</b> &middot; avg Proj <b>${fmtNet1(s[ti].avgProj)}</b></div>
-        ${rows || '<div class="tm-meta">No players yet</div>'}
+      <div class="cup-team t${t}">
+        <input class="team-name" data-team="${t}" value="${state.teamNames[t].replace(/"/g, "&quot;")}">
+        <div class="team-totals">${s.n} of ${TEAM_SIZE} &middot; avg HI <b>${fmt1(s.avgHi)}</b> &middot; total course hcp <b>${s.totCrs}</b></div>
+        ${rows}
+        ${empty > 0 ? `<div class="tm-meta" style="padding-top:6px">${empty} spot${empty > 1 ? "s" : ""} to fill</div>` : ""}
       </div>`;
   }).join("");
 
-  const pinCount = Object.keys(state.pins).length;
-  const clearPins = pinCount
-    ? `<button id="clear-pins-btn" class="undo-btn">Clear ${pinCount} locked player${pinCount > 1 ? "s" : ""}</button>` : "";
-
   return `
-    ${teamsControls()}
-    ${notice}
-    ${balance}
     <button id="copy-teams-btn" class="copy-teams-btn">&#128203; Copy Teams as Text</button>
-    ${clearPins}
     <div class="teams-grid">${cards}</div>
-    <p class="tm-meta" style="margin-top:12px">Captains are fixed to their own team. &#128204; locks another player to their team; &#8644; locks them to the other team. Everyone else is placed automatically.</p>
+    <p class="tm-meta" style="margin-top:12px">Tap a team name to rename it.</p>
   `;
 }
 
 function teamsAsText() {
-  const teams = balanceTeams(fieldPlayers());
   const lines = ["Youche Cup — Teams", ""];
-  teams.forEach((team, ti) => {
-    const s = teamStats(team);
-    lines.push(`${state.teamNames[ti]} (avg HI ${fmt1(s.avgHi)})`);
-    team.forEach(p => lines.push(`  ${p.name}${isCaptain(p.name) ? " (C)" : ""} (HI ${p.hi ?? "n/a"})${st(p.name) === "invited" ? " - pending" : ""}`));
+  [0, 1].forEach(t => {
+    lines.push(state.teamNames[t]);
+    teamRoster(t).forEach(p =>
+      lines.push(`  ${p.name}${isCaptain(p.name) ? " (C)" : ""} (HI ${p.hi ?? "n/a"})${st(p.name) === "invited" ? " - pending" : ""}`));
     lines.push("");
   });
   return lines.join("\n").trim();
@@ -429,25 +412,16 @@ function copyTeamsText() {
 // ---- Players view ----
 
 function renderPlayers() {
-  const sorters = {
-    proj: (a, b) => (proj(a) ?? 99) - (proj(b) ?? 99) || (a.netBest ?? 99) - (b.netBest ?? 99),
-    hi: (a, b) => (a.hi ?? 99) - (b.hi ?? 99),
-    rank: (a, b) => PLAYERS.indexOf(a) - PLAYERS.indexOf(b),
-  };
   const list = [...PLAYERS].filter(p => st(p.name) !== "declined").sort(sorters[playerSort]);
-  const seg = (val, label) => `<button class="${playerSort === val ? "on" : ""}" data-sort="${val}">${label}</button>`;
-  const rows = list.map((p, i) => `
-    <div class="player-card st-${st(p.name)}">
+  const rows = list.map(p => `
+    <div class="player-card st-${st(p.name)}${isDrafted(p.name) && !isCaptain(p.name) ? " drafted" : ""}">
       <div class="pinfo">
-        <div class="pname"><span class="cup-rank">${i + 1}.</span>${p.name} <span class="cup-pts">&middot; Cup #${p.rank}</span></div>
+        <div class="pname"><span class="cup-rank">${p.rank}</span>${p.name}${capTag(p)}${draftedLabel(p)}</div>
         <div class="pmeta">${playerMeta(p)}</div>
       </div>
     </div>`).join("");
   return `
-    <div class="ctrl-row">
-      <label>Sort by</label>
-      <span class="seg">${seg("proj", "Proj net")}${seg("hi", "Handicap")}${seg("rank", "Cup points")}</span>
-    </div>
+    <div class="ctrl-row"><label>Sort by</label>${sortSeg(playerSort, "sort")}</div>
     <div class="section-label">${list.length} candidates (declined hidden)</div>
     ${rows}`;
 }
@@ -471,7 +445,7 @@ const GUIDE_STATS = [
     term: "Crs", sub: "Course Handicap",
     def: "Strokes received on Youche's white tees (Course Rating 70.4, Slope 127, Par 71).",
     good: "Neither good nor bad. It converts gross to net. The Teams tab totals it per team.",
-    bad: "A big gap in total course handicap between teams means one side is giving up a lot of strokes in gross formats."
+    bad: "In gross formats, a team with a much higher total is giving up a lot of strokes."
   },
   {
     term: "L10", sub: "Net-to-Par, Last 10 Rounds",
@@ -506,7 +480,7 @@ const GUIDE_STATS = [
   {
     term: "Proj", sub: "Projected Net-to-Par",
     def: "60% L10 + 40% 2yr. One number for how a player should score net right now, weighted toward current form. Lower is stronger.",
-    good: "Used by the balancer so neither team stacks the in-form players.",
+    good: "A quick way to compare players with different handicaps.",
     bad: "It's a projection from posted scores. Players who rarely post can be misjudged."
   },
   {
@@ -530,10 +504,6 @@ function renderGuide() {
       <h2>Stats Guide</h2>
       <p>Same player evaluation as the Calcutta, without flights. Net-to-par figures are on Youche whites
       (70.4/127/71) using the player's own handicap.</p>
-      <p><b>How teams are balanced:</b> the top ${FIELD} available players (by Cup points) are split
-      ${TEAM_SIZE}–${TEAM_SIZE}. The balancer tries thousands of splits and keeps the one where the teams'
-      average Handicap Index and/or average Proj net are closest, with the spread of handicaps kept similar
-      so match-play pairings line up. Any time someone accepts or declines, teams are rebuilt automatically.</p>
     </div>
     <div class="guide-list">${cards}</div>`;
 }
@@ -543,32 +513,32 @@ function renderGuide() {
 function render() {
   const app = document.getElementById("app");
   if (activeView === "roster") app.innerHTML = renderRoster();
+  else if (activeView === "draft") app.innerHTML = renderDraft();
   else if (activeView === "teams") app.innerHTML = renderTeams();
   else if (activeView === "players") app.innerHTML = renderPlayers();
   else app.innerHTML = renderGuide();
 
-  app.querySelectorAll("[data-status]").forEach(b =>
-    b.addEventListener("click", () => setStatus(b.dataset.name, b.dataset.status)));
-  app.querySelectorAll("[data-pin]").forEach(b =>
-    b.addEventListener("click", () => togglePin(b.dataset.name, parseInt(b.dataset.pin, 10))));
-  app.querySelectorAll("[data-mode]").forEach(b =>
-    b.addEventListener("click", () => { state.mode = b.dataset.mode; saveState(); render(); }));
-  app.querySelectorAll("[data-sort]").forEach(b =>
-    b.addEventListener("click", () => { playerSort = b.dataset.sort; render(); }));
+  const on = (sel, fn) => app.querySelectorAll(sel).forEach(b => b.addEventListener("click", () => fn(b)));
+  on("[data-status]", b => setStatus(b.dataset.name, b.dataset.status));
+  on("[data-pick]", b => makePick(b.dataset.pick));
+  on("[data-sort]", b => { playerSort = b.dataset.sort; render(); });
+  on("[data-poolsort]", b => { poolSort = b.dataset.poolsort; render(); });
+  on("[data-first]", b => { state.draft.first = +b.dataset.first; saveState(); render(); });
+  on("[data-format]", b => { state.draft.format = b.dataset.format; saveState(); render(); });
+  on("#coin-btn", () => {
+    state.draft.first = Math.random() < 0.5 ? 0 : 1;
+    saveState(); render();
+    alert(`${state.teamNames[state.draft.first]} picks first.`);
+  });
+  on("#start-btn", () => { state.draft.started = true; saveState(); render(); });
+  on("#undo-btn", undoPick);
+  on("#copy-teams-btn", copyTeamsText);
+
   app.querySelectorAll("input.team-name").forEach(inp =>
     inp.addEventListener("change", () => {
       state.teamNames[+inp.dataset.team] = inp.value.trim() || `Team ${+inp.dataset.team + 1}`;
       saveState(); render();
     }));
-
-  const pending = document.getElementById("pending-chk");
-  if (pending) pending.addEventListener("change", () => { state.includePending = pending.checked; saveState(); render(); });
-
-  const clear = document.getElementById("clear-pins-btn");
-  if (clear) clear.addEventListener("click", () => { state.pins = {}; saveState(); render(); });
-
-  const copyBtn = document.getElementById("copy-teams-btn");
-  if (copyBtn) copyBtn.addEventListener("click", copyTeamsText);
 }
 
 document.querySelectorAll(".tab-btn").forEach(btn => {
@@ -581,11 +551,15 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
 });
 
 document.getElementById("reset-btn").addEventListener("click", () => {
-  if (confirm("Reset everything? This clears all accept/decline answers, locks and team names.")) {
-    try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
+  const choice = prompt("Type DRAFT to clear just the draft picks, or ALL to also clear every accept/decline answer.");
+  if (!choice) return;
+  if (choice.trim().toUpperCase() === "DRAFT") {
+    state.draft = defaultState().draft;
+  } else if (choice.trim().toUpperCase() === "ALL") {
     state = defaultState();
-    render();
-  }
+  } else return;
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+  render();
 });
 
 render();
