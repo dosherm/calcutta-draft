@@ -120,3 +120,32 @@
 .tabs .tab-btn { font-size: 0.85rem; }
 
 .yhcp { color: var(--navy); font-weight: 800; }
+
+/* My List */
+.star-btn {
+  border: none; background: none; font-size: 1.35rem; line-height: 1; color: #c7cbd3;
+  padding: 0 10px 0 0; flex-shrink: 0;
+}
+.star-btn.on { color: var(--gold); }
+.mylist-rank {
+  display: inline-block; font-size: 0.66rem; font-weight: 800; color: #2a2106; background: var(--gold);
+  border-radius: 999px; padding: 1px 6px; margin-left: 4px; vertical-align: middle;
+}
+.mylist-strip {
+  background: #fffaf0; border: 1px solid #f0d58a; border-radius: 12px; padding: 10px 12px; margin-bottom: 12px;
+}
+.mylist-head {
+  font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #8a6d12; margin-bottom: 4px;
+}
+.mylist-row {
+  display: flex; justify-content: space-between; align-items: center; padding: 5px 0;
+  border-top: 1px solid #f3e3b5; font-weight: 700; font-size: 0.9rem;
+}
+.mylist-row:first-of-type { border-top: none; }
+.mylist-num {
+  display: inline-block; min-width: 20px; color: #8a6d12; font-weight: 800;
+}
+.mylist-num.big { font-size: 1.1rem; min-width: 28px; flex-shrink: 0; }
+.pick-btn.small { padding: 6px 12px; font-size: 0.8rem; }
+.add-btn { background: #fff; color: var(--navy); border: 1px solid var(--navy); }
+.mylist-card .order-ctrls { display: flex; gap: 4px; margin-left: 8px; }

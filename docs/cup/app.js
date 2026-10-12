@@ -30,6 +30,7 @@ function defaultState() {
       format: "snake",     // "snake" (1-2-2-2…) or "alternate" (1-1-1…)
       picks: [],           // [{team, name}] in pick order
     },
+    myList: [],            // your own ranked want list (names, best first)
   };
 }
 
@@ -40,6 +41,7 @@ function loadState() {
       const s = { ...defaultState(), ...JSON.parse(raw) };
       // Drop picks of anyone no longer in the field
       s.draft.picks = s.draft.picks.filter(p => byName[p.name]);
+      s.myList = (s.myList || []).filter(n => byName[n]);
       return s;
     }
   } catch (e) { /* fall through */ }
@@ -108,7 +110,7 @@ function fmtHi(h) {
 function playerMeta(p) {
   if (p.hi == null) return "No GHIN data";
   if (p.basis === "none") return `<b class="yhcp">Youche ${fmtCrs(p.courseHcp)}</b> (HI ${fmtHi(p.hi)}) &middot; <span class="limited-tag">no GHIN history</span>`;
-  const low = p.lowHi != null ? ` (low ${fmtHi(p.lowHi)})` : "";
+  const low = p.lowHi != null ? `, low ${fmtHi(p.lowHi)}` : "";
   return `<b class="yhcp">Youche ${fmtCrs(p.courseHcp)}</b> (HI ${fmtHi(p.hi)}${low}) &middot; L10 ${fmtNet(p.netL10)} &middot; 2yr ${fmtNet(p.net2yr)} &middot; best ${fmtNet(p.netBest)} &middot; ${formIcon(p.form)}${sharpBadge(p)} &middot; <span class="proj">Proj ${fmtNet1(proj(p))}</span>${limitedTag(p)}`;
 }
 
@@ -149,6 +151,41 @@ const isDrafted = name => isCaptain(name) || state.draft.picks.some(p => p.name 
 
 function draftPool() {
   return PLAYERS.filter(p => !isDrafted(p.name));
+}
+
+// ---- My List: a private ranked want list. Picked players drop off the view
+// (they stay stored, so undoing a pick puts them back in their old spot). ----
+
+const onMyList = name => state.myList.includes(name);
+const myListAvailable = () => state.myList.filter(n => !isDrafted(n));
+
+function toggleMyList(name) {
+  if (onMyList(name)) state.myList = state.myList.filter(n => n !== name);
+  else state.myList.push(name);
+  saveState();
+  render();
+}
+
+// Move among the still-available names only, so picked players don't get in the way
+function moveMyList(name, dir) {
+  const avail = myListAvailable();
+  const i = avail.indexOf(name), j = i + dir;
+  if (i < 0 || j < 0 || j >= avail.length) return;
+  const a = state.myList.indexOf(avail[i]), b = state.myList.indexOf(avail[j]);
+  [state.myList[a], state.myList[b]] = [state.myList[b], state.myList[a]];
+  saveState();
+  render();
+}
+
+function starBtn(p) {
+  if (isCaptain(p.name)) return "";
+  const on = onMyList(p.name);
+  return `<button class="star-btn${on ? " on" : ""}" data-star="${p.name}" title="${on ? "Remove from" : "Add to"} My List">${on ? "&#9733;" : "&#9734;"}</button>`;
+}
+
+function myListRank(name) {
+  const i = myListAvailable().indexOf(name);
+  return i >= 0 ? ` <span class="mylist-rank">My #${i + 1}</span>` : "";
 }
 
 // The team owed the earliest slot in the sequence. Normally that's just the next
@@ -234,12 +271,25 @@ function renderDraft() {
   const nextUp = seq.slice(picksDone + 1, picksDone + 4).map(t => state.teamNames[t].replace(/^Team /, "")).join(", ");
   const cards = pool.map(p => `
     <div class="player-card">
+      ${starBtn(p)}
       <div class="pinfo">
-        <div class="pname">${p.name}</div>
+        <div class="pname">${p.name}${myListRank(p.name)}</div>
         <div class="pmeta">${playerMeta(p)}</div>
       </div>
       <button class="pick-btn" data-pick="${p.name}">Draft</button>
     </div>`).join("");
+
+  const mine = myListAvailable();
+  const myStrip = mine.length ? `
+    <div class="mylist-strip">
+      <div class="mylist-head">My List &middot; next up</div>
+      ${mine.slice(0, 3).map((n, i) => `
+        <div class="mylist-row">
+          <span><span class="mylist-num">${i + 1}</span>${n} <span class="tm-meta">Youche ${fmtCrs(byName[n].courseHcp)}</span></span>
+          <button class="pick-btn small" data-pick="${n}">Draft</button>
+        </div>`).join("")}
+      ${mine.length > 3 ? `<div class="tm-meta">+${mine.length - 3} more on My List</div>` : ""}
+    </div>` : "";
 
   return `
     <div class="draft-status">
@@ -248,9 +298,54 @@ function renderDraft() {
       <div class="on-clock-sub">${CAPTAINS[team] ? CAPTAINS[team].name : ""} is on the clock &middot; ${teamRoster(team).length} of ${TEAM_SIZE} on the team${nextUp ? ` &middot; then ${nextUp}` : ""}</div>
     </div>
     ${undoBtn}
+    ${myStrip}
     <div class="ctrl-row"><label>Sort by</label>${sortSeg(poolSort, "poolsort")}</div>
-    <div class="section-label">Available (${pool.length})</div>
+    <div class="section-label">Available (${pool.length}) &middot; tap &#9734; to add to My List</div>
     ${cards || "<p>No players left in the pool.</p>"}
+  `;
+}
+
+// ---- My List view ----
+
+function renderMyList() {
+  const mine = myListAvailable();
+  const picked = state.myList.filter(n => isDrafted(n));
+  const rows = mine.map((n, i) => {
+    const p = byName[n];
+    return `
+      <div class="player-card mylist-card">
+        <span class="mylist-num big">${i + 1}</span>
+        <div class="pinfo">
+          <div class="pname">${n}</div>
+          <div class="pmeta">${playerMeta(p)}</div>
+        </div>
+        <span class="order-ctrls">
+          <button class="ord-btn" data-mymove="-1" data-name="${n}" ${i === 0 ? "disabled" : ""}>&#9650;</button>
+          <button class="ord-btn" data-mymove="1" data-name="${n}" ${i === mine.length - 1 ? "disabled" : ""}>&#9660;</button>
+          <button class="ord-btn" data-star="${n}" title="Remove">&#10005;</button>
+        </span>
+      </div>`;
+  }).join("");
+
+  const rest = draftPool().filter(p => !onMyList(p.name)).sort(sorters[poolSort]);
+  const addRows = rest.map(p => `
+    <div class="player-card">
+      <div class="pinfo">
+        <div class="pname">${p.name}</div>
+        <div class="pmeta">${playerMeta(p)}</div>
+      </div>
+      <button class="pick-btn add-btn" data-star="${p.name}">+ Add</button>
+    </div>`).join("");
+
+  return `
+    <div class="guide-intro">
+      <h2>My List</h2>
+      <p>Your own order of who you want. Use &#9650;&#9660; to rearrange. When a player is drafted by either team he
+      drops off. Undo a pick and he comes back in the same spot. Only you see this list.</p>
+    </div>
+    ${rows ? `<div class="section-label">Your order (${mine.length})</div>${rows}` : '<div class="notice">Your list is empty. Add players below, or tap &#9734; on the Draft tab.</div>'}
+    ${picked.length ? `<div class="tm-meta" style="margin:4px 4px 12px">Already picked: ${picked.join(", ")}</div>` : ""}
+    ${addRows ? `<div class="section-label">Add players (${rest.length})</div>${addRows}` : ""}
   `;
 }
 
@@ -337,8 +432,9 @@ function renderPlayers() {
   const list = [...PLAYERS].sort(sorters[playerSort]);
   const rows = list.map(p => `
     <div class="player-card${isDrafted(p.name) && !isCaptain(p.name) ? " drafted" : ""}">
+      ${isDrafted(p.name) ? "" : starBtn(p)}
       <div class="pinfo">
-        <div class="pname">${p.name}${capTag(p)}${draftedLabel(p)}</div>
+        <div class="pname">${p.name}${capTag(p)}${draftedLabel(p)}${myListRank(p.name)}</div>
         <div class="pmeta">${playerMeta(p)}</div>
       </div>
     </div>`).join("");
@@ -436,12 +532,15 @@ function renderGuide() {
 function render() {
   const app = document.getElementById("app");
   if (activeView === "draft") app.innerHTML = renderDraft();
+  else if (activeView === "mylist") app.innerHTML = renderMyList();
   else if (activeView === "teams") app.innerHTML = renderTeams();
   else if (activeView === "players") app.innerHTML = renderPlayers();
   else app.innerHTML = renderGuide();
 
   const on = (sel, fn) => app.querySelectorAll(sel).forEach(b => b.addEventListener("click", () => fn(b)));
   on("[data-pick]", b => makePick(b.dataset.pick));
+  on("[data-star]", b => toggleMyList(b.dataset.star));
+  on("[data-mymove]", b => moveMyList(b.dataset.name, +b.dataset.mymove));
   on("[data-sort]", b => { playerSort = b.dataset.sort; render(); });
   on("[data-poolsort]", b => { poolSort = b.dataset.poolsort; render(); });
   on("[data-first]", b => { state.draft.first = +b.dataset.first; saveState(); render(); });
@@ -472,7 +571,7 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
 });
 
 document.getElementById("reset-btn").addEventListener("click", () => {
-  if (!confirm("Reset the draft? This clears every pick (team names are kept).")) return;
+  if (!confirm("Reset the draft? This clears every pick (team names and My List are kept).")) return;
   state.draft = defaultState().draft;
   saveState();
   render();
