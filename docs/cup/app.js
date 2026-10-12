@@ -107,9 +107,9 @@ function fmtHi(h) {
 
 function playerMeta(p) {
   if (p.hi == null) return "No GHIN data";
-  if (p.basis === "none") return `HI ${fmtHi(p.hi)} &middot; Crs ${fmtCrs(p.courseHcp)} &middot; <span class="limited-tag">no GHIN history</span>`;
+  if (p.basis === "none") return `<b class="yhcp">Youche ${fmtCrs(p.courseHcp)}</b> (HI ${fmtHi(p.hi)}) &middot; <span class="limited-tag">no GHIN history</span>`;
   const low = p.lowHi != null ? ` (low ${fmtHi(p.lowHi)})` : "";
-  return `HI ${fmtHi(p.hi)}${low} &middot; Crs ${fmtCrs(p.courseHcp)} &middot; L10 ${fmtNet(p.netL10)} &middot; 2yr ${fmtNet(p.net2yr)} &middot; best ${fmtNet(p.netBest)} &middot; ${formIcon(p.form)}${sharpBadge(p)} &middot; <span class="proj">Proj ${fmtNet1(proj(p))}</span>${limitedTag(p)}`;
+  return `<b class="yhcp">Youche ${fmtCrs(p.courseHcp)}</b> (HI ${fmtHi(p.hi)}${low}) &middot; L10 ${fmtNet(p.netL10)} &middot; 2yr ${fmtNet(p.net2yr)} &middot; best ${fmtNet(p.netBest)} &middot; ${formIcon(p.form)}${sharpBadge(p)} &middot; <span class="proj">Proj ${fmtNet1(proj(p))}</span>${limitedTag(p)}`;
 }
 
 const sorters = {
@@ -120,7 +120,7 @@ const sorters = {
 
 function sortSeg(current, attr) {
   const seg = (val, label) => `<button class="${current === val ? "on" : ""}" data-${attr}="${val}">${label}</button>`;
-  return `<span class="seg">${seg("hi", "Handicap")}${seg("l10", "L10 net")}${seg("proj", "Proj net")}</span>`;
+  return `<span class="seg">${seg("hi", "Youche hcp")}${seg("l10", "L10 net")}${seg("proj", "Proj net")}</span>`;
 }
 
 // ---- Draft model ----
@@ -260,7 +260,7 @@ function teamStats(team) {
   const valid = team.filter(p => p.hi != null);
   return {
     n: team.length,
-    avgHi: valid.length ? valid.reduce((s, p) => s + p.hi, 0) / valid.length : null,
+    avgCrs: valid.length ? valid.reduce((s, p) => s + p.courseHcp, 0) / valid.length : null,
     totCrs: valid.reduce((s, p) => s + p.courseHcp, 0),
   };
 }
@@ -276,7 +276,7 @@ function renderTeams() {
         <div class="tm-row">
           <div>
             <div class="tm-name"><span class="cup-rank">${label}</span>${p.name}</div>
-            <div class="tm-meta">HI ${fmtHi(p.hi)} &middot; Crs ${fmtCrs(p.courseHcp)} &middot; L10 ${fmtNet(p.netL10)} &middot; 2yr ${fmtNet(p.net2yr)} &middot; ${p.form || ""}${p.sharp ? " &#9889;" : ""}</div>
+            <div class="tm-meta"><b class="yhcp">Youche ${fmtCrs(p.courseHcp)}</b> &middot; L10 ${fmtNet(p.netL10)} &middot; 2yr ${fmtNet(p.net2yr)} &middot; ${p.form || ""}${p.sharp ? " &#9889;" : ""}</div>
           </div>
         </div>`;
     }).join("");
@@ -284,7 +284,7 @@ function renderTeams() {
     return `
       <div class="cup-team t${t}">
         <input class="team-name" data-team="${t}" value="${state.teamNames[t].replace(/"/g, "&quot;")}">
-        <div class="team-totals">${s.n} of ${TEAM_SIZE} &middot; avg HI <b>${fmt1(s.avgHi)}</b> &middot; total course hcp <b>${s.totCrs}</b></div>
+        <div class="team-totals">${s.n} of ${TEAM_SIZE} &middot; total Youche hcp <b>${s.totCrs}</b> &middot; avg <b>${fmt1(s.avgCrs)}</b></div>
         ${rows}
         ${empty > 0 ? `<div class="tm-meta" style="padding-top:6px">${empty} spot${empty > 1 ? "s" : ""} to fill</div>` : ""}
       </div>`;
@@ -302,7 +302,7 @@ function teamsAsText() {
   [0, 1].forEach(t => {
     lines.push(state.teamNames[t]);
     teamRoster(t).forEach(p =>
-      lines.push(`  ${p.name}${isCaptain(p.name) ? " (C)" : ""} (HI ${fmtHi(p.hi)})`));
+      lines.push(`  ${p.name}${isCaptain(p.name) ? " (C)" : ""} (Youche ${fmtCrs(p.courseHcp)})`));
     lines.push("");
   });
   return lines.join("\n").trim();
@@ -364,7 +364,7 @@ const GUIDE_STATS = [
     bad: "A big gap between HI and Low means they're scoring worse than their proven ceiling right now."
   },
   {
-    term: "Crs", sub: "Course Handicap",
+    term: "Youche", sub: "Youche White Tees Handicap",
     def: "Strokes received on Youche's white tees (Course Rating 70.4, Slope 127, Par 71).",
     good: "Neither good nor bad. It converts gross to net. The Teams tab totals it per team.",
     bad: "In gross formats, a team with a much higher total is giving up a lot of strokes."
@@ -424,8 +424,9 @@ function renderGuide() {
   return `
     <div class="guide-intro">
       <h2>Stats Guide</h2>
-      <p>Same player evaluation as the Calcutta, without flights. HI is each player's official Cup handicap,
-      and net-to-par figures are on Youche whites (70.4/127/71) using that handicap.</p>
+      <p>Same player evaluation as the Calcutta, without flights. The main number on each card is the player's
+      handicap at Youche from the white tees (Course Rating 70.4, Slope 127, Par 71), worked out from their official
+      Cup Handicap Index (HI). Net-to-par figures use that same handicap.</p>
     </div>
     <div class="guide-list">${cards}</div>`;
 }

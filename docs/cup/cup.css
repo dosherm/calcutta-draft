@@ -118,3 +118,5 @@
 .pending-tag { color: #a16207; background: #fff4d6; }
 .drafted-to { color: #fff; background: var(--navy); }
 .tabs .tab-btn { font-size: 0.85rem; }
+
+.yhcp { color: var(--navy); font-weight: 800; }
