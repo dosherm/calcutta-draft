@@ -1,7 +1,7 @@
-// Youche Cup — invite tracker + live captains' draft
+// Youche Cup — live captains' draft
 // Single-device, localStorage-persisted. PLAYERS comes from data.js (youche_cup.py).
 
-const STORAGE_KEY = "youche-cup-state-v3";
+const STORAGE_KEY = "youche-cup-state-v4";
 const TEAM_SIZE = 12;
 const FIELD = TEAM_SIZE * 2;
 
@@ -22,15 +22,7 @@ const isCaptain = name => CAPTAINS.some(c => c && c.name === name);
 const byName = Object.fromEntries(PLAYERS.map(p => [p.name, p]));
 
 function defaultState() {
-  // The top 24 who haven't already said no get invited; the rest are alternates
-  let invited = 0;
-  const status = Object.fromEntries(PLAYERS.map(p => {
-    if (p.captain != null) { invited++; return [p.name, "accepted"]; }
-    if (p.status === "declined") return [p.name, "declined"];
-    return [p.name, invited++ < FIELD ? "invited" : "alternate"];
-  }));
   return {
-    status,
     teamNames: CAPTAINS.map((c, t) => c ? `Team ${c.name.split(" ").slice(-1)[0]}` : `Team ${t + 1}`),
     draft: {
       started: false,
@@ -46,8 +38,8 @@ function loadState() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const s = { ...defaultState(), ...JSON.parse(raw) };
-      // Players added to data.js after the state was saved start as alternates
-      PLAYERS.forEach(p => { if (!s.status[p.name]) s.status[p.name] = "alternate"; });
+      // Drop picks of anyone no longer in the field
+      s.draft.picks = s.draft.picks.filter(p => byName[p.name]);
       return s;
     }
   } catch (e) { /* fall through */ }
@@ -55,15 +47,13 @@ function loadState() {
 }
 
 let state = loadState();
-let activeView = "roster";
-let playerSort = "rank";
-let poolSort = "rank";
+let activeView = "draft";
+let playerSort = "hi";
+let poolSort = "hi";
 
 function saveState() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
 }
-
-const st = name => state.status[name];
 
 // ---- Formatting (same conventions as the Calcutta tracker) ----
 
@@ -104,27 +94,33 @@ function capTag(p) {
   return isCaptain(p.name) ? ' <span class="cap-c">C</span>' : "";
 }
 
+// Plus handicaps display golf-style: a course handicap of -1 is "+1"
+function fmtCrs(c) {
+  if (c === null || c === undefined) return "n/a";
+  return c < 0 ? `+${-c}` : `${c}`;
+}
+
+function fmtHi(h) {
+  if (h === null || h === undefined) return "n/a";
+  return h < 0 ? `+${(-h).toFixed(1)}` : h.toFixed(1);
+}
+
 function playerMeta(p) {
   if (p.hi == null) return "No GHIN data";
-  const low = p.lowHi != null ? ` (low ${p.lowHi})` : "";
-  return `HI ${p.hi}${low} &middot; Crs ${p.courseHcp} &middot; L10 ${fmtNet(p.netL10)} &middot; 2yr ${fmtNet(p.net2yr)} &middot; best ${fmtNet(p.netBest)} &middot; ${formIcon(p.form)}${sharpBadge(p)} &middot; <span class="proj">Proj ${fmtNet1(proj(p))}</span>${limitedTag(p)}`;
+  if (p.basis === "none") return `HI ${fmtHi(p.hi)} &middot; Crs ${fmtCrs(p.courseHcp)} &middot; <span class="limited-tag">no GHIN history</span>`;
+  const low = p.lowHi != null ? ` (low ${fmtHi(p.lowHi)})` : "";
+  return `HI ${fmtHi(p.hi)}${low} &middot; Crs ${fmtCrs(p.courseHcp)} &middot; L10 ${fmtNet(p.netL10)} &middot; 2yr ${fmtNet(p.net2yr)} &middot; best ${fmtNet(p.netBest)} &middot; ${formIcon(p.form)}${sharpBadge(p)} &middot; <span class="proj">Proj ${fmtNet1(proj(p))}</span>${limitedTag(p)}`;
 }
 
 const sorters = {
-  rank: (a, b) => PLAYERS.indexOf(a) - PLAYERS.indexOf(b),
   hi: (a, b) => (a.hi ?? 99) - (b.hi ?? 99),
+  l10: (a, b) => (a.netL10 ?? 99) - (b.netL10 ?? 99) || (a.hi ?? 99) - (b.hi ?? 99),
   proj: (a, b) => (proj(a) ?? 99) - (proj(b) ?? 99) || (a.netBest ?? 99) - (b.netBest ?? 99),
 };
 
 function sortSeg(current, attr) {
   const seg = (val, label) => `<button class="${current === val ? "on" : ""}" data-${attr}="${val}">${label}</button>`;
-  return `<span class="seg">${seg("rank", "Cup points")}${seg("hi", "Handicap")}${seg("proj", "Proj net")}</span>`;
-}
-
-function counts() {
-  const c = { accepted: 0, invited: 0, declined: 0, alternate: 0 };
-  PLAYERS.forEach(p => { c[st(p.name)]++; });
-  return c;
+  return `<span class="seg">${seg("hi", "Handicap")}${seg("l10", "L10 net")}${seg("proj", "Proj net")}</span>`;
 }
 
 // ---- Draft model ----
@@ -151,9 +147,8 @@ function teamRoster(t) {
 
 const isDrafted = name => isCaptain(name) || state.draft.picks.some(p => p.name === name);
 
-// Accepted and still-pending invitees can be drafted; alternates and declines can't.
 function draftPool() {
-  return PLAYERS.filter(p => !isDrafted(p.name) && ["accepted", "invited"].includes(st(p.name)));
+  return PLAYERS.filter(p => !isDrafted(p.name));
 }
 
 // The team owed the earliest slot in the sequence. Normally that's just the next
@@ -170,16 +165,6 @@ function onTheClock() {
 
 // ---- Actions ----
 
-function setStatus(name, s) {
-  state.status[name] = s;
-  // A drafted player who drops out comes off his team; that captain picks again later
-  if (s === "declined" || s === "alternate") {
-    state.draft.picks = state.draft.picks.filter(p => p.name !== name);
-  }
-  saveState();
-  render();
-}
-
 function makePick(name) {
   const team = onTheClock();
   if (team === null || isDrafted(name)) return;
@@ -194,70 +179,9 @@ function undoPick() {
   render();
 }
 
-// ---- Roster view ----
-
-function statusButtons(p) {
-  if (isCaptain(p.name)) return '<span class="captain-badge">CAPTAIN</span>';
-  const s = st(p.name);
-  if (s === "alternate") {
-    return `<button class="st-btn invite-next" data-status="invited" data-name="${p.name}">Invite</button>`;
-  }
-  const btn = (val, label) => {
-    const on = s === val;
-    // Tapping the active choice reverts to "invited / no answer yet"
-    return `<button class="st-btn ${val}${on ? " on" : ""}" data-status="${on ? "invited" : val}" data-name="${p.name}">${label}</button>`;
-  };
-  return btn("accepted", "&#10003; In") + btn("declined", "&#10007; Out");
-}
-
 function draftedLabel(p) {
   const pk = state.draft.picks.find(x => x.name === p.name);
   return pk ? ` <span class="drafted-to">${state.teamNames[pk.team]}</span>` : "";
-}
-
-function rosterCard(p) {
-  const s = st(p.name);
-  const pts = p.points != null ? `${p.points} pts` : "pts n/a";
-  return `
-    <div class="player-card st-${s}">
-      <div class="pinfo">
-        <div class="pname"><span class="cup-rank">${p.rank}</span>${p.name}${capTag(p)}${draftedLabel(p)}</div>
-        <div class="cup-pts">${pts} &middot; ${p.wins} win${p.wins === 1 ? "" : "s"} in ${p.events} events</div>
-        <div class="pmeta">${playerMeta(p)}</div>
-      </div>
-      <div class="status-group">${statusButtons(p)}</div>
-    </div>`;
-}
-
-function renderRoster() {
-  const c = counts();
-  const open = Math.max(0, FIELD - c.accepted - c.invited);
-  const nextAlts = PLAYERS.filter(p => st(p.name) === "alternate").slice(0, open);
-
-  let notice;
-  if (c.accepted >= FIELD) {
-    notice = `<div class="notice ok">Field is full: ${c.accepted} players have accepted.</div>`;
-  } else if (open > 0) {
-    notice = `<div class="notice">${open} spot${open > 1 ? "s" : ""} open after declines. Next up: <b>${nextAlts.map(p => p.name).join(", ") || "no alternates left"}</b>.</div>`;
-  } else {
-    notice = `<div class="notice">${c.invited} invitation${c.invited === 1 ? "" : "s"} still waiting on an answer.</div>`;
-  }
-
-  const section = (label, list) => list.length
-    ? `<div class="section-label">${label} (${list.length})</div>${list.map(rosterCard).join("")}` : "";
-
-  return `
-    <div class="summary-bar">
-      <div><div class="num">${c.accepted}</div><div class="lbl">Accepted</div></div>
-      <div><div class="num">${c.invited}</div><div class="lbl">Pending</div></div>
-      <div><div class="num">${c.declined}</div><div class="lbl">Declined</div></div>
-      <div><div class="num">${Math.max(0, FIELD - c.accepted)}</div><div class="lbl">Spots left</div></div>
-    </div>
-    ${notice}
-    ${section("Invited", PLAYERS.filter(p => ["invited", "accepted"].includes(st(p.name))))}
-    ${section("Alternates", PLAYERS.filter(p => st(p.name) === "alternate"))}
-    ${section("Declined", PLAYERS.filter(p => st(p.name) === "declined"))}
-  `;
 }
 
 // ---- Draft view ----
@@ -268,13 +192,12 @@ function renderSetup() {
   const seg = (val, label) => `<button class="${d.format === val ? "on" : ""}" data-format="${val}">${label}</button>`;
   const firstBtn = t => `<button class="${d.first === t ? "on" : ""}" data-first="${t}">${name(t)}</button>`;
   const order = pickSequence().slice(0, 8).map(t => name(t).replace(/^Team /, "")).join(", ");
-  const c = counts();
 
   return `
     <div class="setup-intro">
       <h2>Set Up the Draft</h2>
       <p>${CAPTAINS.map(cp => cp ? cp.name : "?").join(" and ")} each draft ${PICKS_PER_TEAM} players for a team of ${TEAM_SIZE}.
-      Accepted players and invitees still waiting to answer can be drafted.</p>
+      The other ${PLAYERS.length - 2} players are in the draft pool.</p>
     </div>
     <div class="ctrl-row">
       <label>First pick</label>
@@ -286,7 +209,6 @@ function renderSetup() {
       <span class="seg">${seg("snake", "Snake (1-2-2…)")}${seg("alternate", "Alternate (1-1…)")}</span>
       <div class="tm-meta" style="width:100%">Order: ${order}…</div>
     </div>
-    ${c.invited ? `<div class="notice">${c.invited} invitee${c.invited === 1 ? " hasn't" : "s haven't"} answered yet. They'll still show in the draft pool, marked pending.</div>` : ""}
     <button id="start-btn" class="big-btn start">Start Draft &#8594;</button>
   `;
 }
@@ -311,9 +233,9 @@ function renderDraft() {
   const seq = pickSequence();
   const nextUp = seq.slice(picksDone + 1, picksDone + 4).map(t => state.teamNames[t].replace(/^Team /, "")).join(", ");
   const cards = pool.map(p => `
-    <div class="player-card st-${st(p.name)}">
+    <div class="player-card">
       <div class="pinfo">
-        <div class="pname"><span class="cup-rank">${p.rank}</span>${p.name}${st(p.name) === "invited" ? ' <span class="pending-tag">pending</span>' : ""}</div>
+        <div class="pname">${p.name}</div>
         <div class="pmeta">${playerMeta(p)}</div>
       </div>
       <button class="pick-btn" data-pick="${p.name}">Draft</button>
@@ -328,7 +250,7 @@ function renderDraft() {
     ${undoBtn}
     <div class="ctrl-row"><label>Sort by</label>${sortSeg(poolSort, "poolsort")}</div>
     <div class="section-label">Available (${pool.length})</div>
-    ${cards || "<p>No players left in the pool. Invite alternates from the Roster tab.</p>"}
+    ${cards || "<p>No players left in the pool.</p>"}
   `;
 }
 
@@ -351,10 +273,10 @@ function renderTeams() {
       const pickNo = state.draft.picks.findIndex(x => x.name === p.name);
       const label = isCaptain(p.name) ? "C" : `#${pickNo + 1}`;
       return `
-        <div class="tm-row${st(p.name) === "invited" ? " pending" : ""}">
+        <div class="tm-row">
           <div>
             <div class="tm-name"><span class="cup-rank">${label}</span>${p.name}</div>
-            <div class="tm-meta">HI ${p.hi ?? "n/a"} &middot; Crs ${p.courseHcp ?? "n/a"} &middot; L10 ${fmtNet(p.netL10)} &middot; 2yr ${fmtNet(p.net2yr)} &middot; ${p.form || ""}${p.sharp ? " &#9889;" : ""}</div>
+            <div class="tm-meta">HI ${fmtHi(p.hi)} &middot; Crs ${fmtCrs(p.courseHcp)} &middot; L10 ${fmtNet(p.netL10)} &middot; 2yr ${fmtNet(p.net2yr)} &middot; ${p.form || ""}${p.sharp ? " &#9889;" : ""}</div>
           </div>
         </div>`;
     }).join("");
@@ -380,7 +302,7 @@ function teamsAsText() {
   [0, 1].forEach(t => {
     lines.push(state.teamNames[t]);
     teamRoster(t).forEach(p =>
-      lines.push(`  ${p.name}${isCaptain(p.name) ? " (C)" : ""} (HI ${p.hi ?? "n/a"})${st(p.name) === "invited" ? " - pending" : ""}`));
+      lines.push(`  ${p.name}${isCaptain(p.name) ? " (C)" : ""} (HI ${fmtHi(p.hi)})`));
     lines.push("");
   });
   return lines.join("\n").trim();
@@ -412,17 +334,17 @@ function copyTeamsText() {
 // ---- Players view ----
 
 function renderPlayers() {
-  const list = [...PLAYERS].filter(p => st(p.name) !== "declined").sort(sorters[playerSort]);
+  const list = [...PLAYERS].sort(sorters[playerSort]);
   const rows = list.map(p => `
-    <div class="player-card st-${st(p.name)}${isDrafted(p.name) && !isCaptain(p.name) ? " drafted" : ""}">
+    <div class="player-card${isDrafted(p.name) && !isCaptain(p.name) ? " drafted" : ""}">
       <div class="pinfo">
-        <div class="pname"><span class="cup-rank">${p.rank}</span>${p.name}${capTag(p)}${draftedLabel(p)}</div>
+        <div class="pname">${p.name}${capTag(p)}${draftedLabel(p)}</div>
         <div class="pmeta">${playerMeta(p)}</div>
       </div>
     </div>`).join("");
   return `
     <div class="ctrl-row"><label>Sort by</label>${sortSeg(playerSort, "sort")}</div>
-    <div class="section-label">${list.length} candidates (declined hidden)</div>
+    <div class="section-label">${list.length} players</div>
     ${rows}`;
 }
 
@@ -502,8 +424,8 @@ function renderGuide() {
   return `
     <div class="guide-intro">
       <h2>Stats Guide</h2>
-      <p>Same player evaluation as the Calcutta, without flights. Net-to-par figures are on Youche whites
-      (70.4/127/71) using the player's own handicap.</p>
+      <p>Same player evaluation as the Calcutta, without flights. HI is each player's official Cup handicap,
+      and net-to-par figures are on Youche whites (70.4/127/71) using that handicap.</p>
     </div>
     <div class="guide-list">${cards}</div>`;
 }
@@ -512,14 +434,12 @@ function renderGuide() {
 
 function render() {
   const app = document.getElementById("app");
-  if (activeView === "roster") app.innerHTML = renderRoster();
-  else if (activeView === "draft") app.innerHTML = renderDraft();
+  if (activeView === "draft") app.innerHTML = renderDraft();
   else if (activeView === "teams") app.innerHTML = renderTeams();
   else if (activeView === "players") app.innerHTML = renderPlayers();
   else app.innerHTML = renderGuide();
 
   const on = (sel, fn) => app.querySelectorAll(sel).forEach(b => b.addEventListener("click", () => fn(b)));
-  on("[data-status]", b => setStatus(b.dataset.name, b.dataset.status));
   on("[data-pick]", b => makePick(b.dataset.pick));
   on("[data-sort]", b => { playerSort = b.dataset.sort; render(); });
   on("[data-poolsort]", b => { poolSort = b.dataset.poolsort; render(); });
@@ -551,14 +471,9 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
 });
 
 document.getElementById("reset-btn").addEventListener("click", () => {
-  const choice = prompt("Type DRAFT to clear just the draft picks, or ALL to also clear every accept/decline answer.");
-  if (!choice) return;
-  if (choice.trim().toUpperCase() === "DRAFT") {
-    state.draft = defaultState().draft;
-  } else if (choice.trim().toUpperCase() === "ALL") {
-    state = defaultState();
-  } else return;
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+  if (!confirm("Reset the draft? This clears every pick (team names are kept).")) return;
+  state.draft = defaultState().draft;
+  saveState();
   render();
 });
 
