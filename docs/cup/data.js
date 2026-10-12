@@ -14,7 +14,8 @@ const PLAYERS = [
     "sharp": false,
     "volatility": null,
     "basis": "none",
-    "asof": null
+    "asof": null,
+    "firstPick": true
   },
   {
     "name": "Chris Myres",
@@ -80,7 +81,8 @@ const PLAYERS = [
     "sharp": true,
     "volatility": 2.96,
     "basis": "2yr",
-    "asof": "Jun 2026"
+    "asof": "Jun 2026",
+    "myList": 3
   },
   {
     "name": "Kevin Livesay",
@@ -208,7 +210,8 @@ const PLAYERS = [
     "sharp": false,
     "volatility": 3.63,
     "basis": "2yr",
-    "asof": "Jun 2026"
+    "asof": "Jun 2026",
+    "myList": 1
   },
   {
     "name": "Scott Yoder",
@@ -288,7 +291,8 @@ const PLAYERS = [
     "sharp": false,
     "volatility": 2.5,
     "basis": "2yr",
-    "asof": "Jun 2026"
+    "asof": "Jun 2026",
+    "myList": 5
   },
   {
     "name": "Trent Trump",
@@ -320,7 +324,8 @@ const PLAYERS = [
     "sharp": true,
     "volatility": 3.78,
     "basis": "2yr",
-    "asof": "Jun 2026"
+    "asof": "Jun 2026",
+    "myList": 2
   },
   {
     "name": "Jerry Lambert",
@@ -384,6 +389,7 @@ const PLAYERS = [
     "sharp": false,
     "volatility": 4.47,
     "basis": "limited",
-    "asof": "Jun 2026"
+    "asof": "Jun 2026",
+    "myList": 4
   }
 ];

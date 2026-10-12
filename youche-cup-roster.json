@@ -1,9 +1,9 @@
 [
-  {"name": "Kevin Cunningham",  "hi": 0.0},
+  {"name": "Kevin Cunningham",  "hi": 0.0,  "firstPick": true},
   {"name": "Chris Myres",       "hi": 3.2,  "captain": 0},
   {"name": "Richard Amodeo",    "hi": 6.6,  "alias": "Rick Amodeo"},
   {"name": "Dan Sherman",       "hi": 7.2,  "captain": 1},
-  {"name": "Josh Marlow",       "hi": 8.3},
+  {"name": "Josh Marlow",       "hi": 8.3, "myList": 3},
   {"name": "Kevin Livesay",     "hi": 9.3},
   {"name": "Casey Wedding",     "hi": 9.6},
   {"name": "Tim Urbaniak",      "hi": 10.0},
@@ -11,16 +11,16 @@
   {"name": "Mike Ballentine",   "hi": 11.4},
   {"name": "Ruben Hernandez",   "hi": 11.5},
   {"name": "Brett Donaghue",    "hi": 11.8},
-  {"name": "John Jordan",       "hi": 12.0},
+  {"name": "John Jordan",       "hi": 12.0, "myList": 1},
   {"name": "Scott Yoder",       "hi": 12.0},
   {"name": "Jeff Lee",          "hi": 12.6},
   {"name": "Daniel Darlson",    "hi": 13.1},
   {"name": "Blake Donaghue",    "hi": 13.4},
-  {"name": "Robert Donaghue",   "hi": 14.8, "alias": "Bob Donaghue"},
+  {"name": "Robert Donaghue",   "hi": 14.8, "alias": "Bob Donaghue", "myList": 5},
   {"name": "Trent Trump",       "hi": 16.1},
-  {"name": "Dean Ricci",        "hi": 17.4},
+  {"name": "Dean Ricci",        "hi": 17.4, "myList": 2},
   {"name": "Jerry Lambert",     "hi": 17.5},
   {"name": "Kevin Rosenthal",   "hi": 17.5},
   {"name": "John Supan",        "hi": 17.9},
-  {"name": "Wayne Anderson",    "hi": 20.3}
+  {"name": "Wayne Anderson",    "hi": 20.3, "myList": 4}
 ]

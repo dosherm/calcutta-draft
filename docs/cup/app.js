@@ -1,7 +1,7 @@
 // Youche Cup — live captains' draft
 // Single-device, localStorage-persisted. PLAYERS comes from data.js (youche_cup.py).
 
-const STORAGE_KEY = "youche-cup-state-v4";
+const STORAGE_KEY = "youche-cup-state-v5";
 const TEAM_SIZE = 12;
 const FIELD = TEAM_SIZE * 2;
 
@@ -20,6 +20,8 @@ function proj(p) {
 const CAPTAINS = [0, 1].map(t => PLAYERS.find(p => p.captain === t));
 const isCaptain = name => CAPTAINS.some(c => c && c.name === name);
 const byName = Object.fromEntries(PLAYERS.map(p => [p.name, p]));
+// Agreed in advance: this player goes first overall to whoever wins the coin toss
+const FIRST_PICK = PLAYERS.find(p => p.firstPick);
 
 function defaultState() {
   return {
@@ -30,7 +32,8 @@ function defaultState() {
       format: "snake",     // "snake" (1-2-2-2…) or "alternate" (1-1-1…)
       picks: [],           // [{team, name}] in pick order
     },
-    myList: [],            // your own ranked want list (names, best first)
+    // your own ranked want list (names, best first), seeded from data.js "myList"
+    myList: PLAYERS.filter(p => p.myList).sort((a, b) => a.myList - b.myList).map(p => p.name),
   };
 }
 
@@ -234,10 +237,10 @@ function renderSetup() {
     <div class="setup-intro">
       <h2>Set Up the Draft</h2>
       <p>${CAPTAINS.map(cp => cp ? cp.name : "?").join(" and ")} each draft ${PICKS_PER_TEAM} players for a team of ${TEAM_SIZE}.
-      The other ${PLAYERS.length - 2} players are in the draft pool.</p>
+      The other ${PLAYERS.length - 2} players are in the draft pool.${FIRST_PICK ? ` <b>${FIRST_PICK.name}</b> goes automatically to whoever wins the coin toss as pick 1.` : ""}</p>
     </div>
     <div class="ctrl-row">
-      <label>First pick</label>
+      <label>Coin toss winner</label>
       <span class="seg">${firstBtn(0)}${firstBtn(1)}</span>
       <button id="coin-btn" class="st-btn">&#129689; Flip a coin</button>
     </div>
@@ -548,9 +551,15 @@ function render() {
   on("#coin-btn", () => {
     state.draft.first = Math.random() < 0.5 ? 0 : 1;
     saveState(); render();
-    alert(`${state.teamNames[state.draft.first]} picks first.`);
+    alert(`${state.teamNames[state.draft.first]} wins the toss${FIRST_PICK ? ` and gets ${FIRST_PICK.name}` : " and picks first"}.`);
   });
-  on("#start-btn", () => { state.draft.started = true; saveState(); render(); });
+  on("#start-btn", () => {
+    state.draft.started = true;
+    if (FIRST_PICK && !state.draft.picks.length) {
+      state.draft.picks.push({ team: state.draft.first, name: FIRST_PICK.name });
+    }
+    saveState(); render();
+  });
   on("#undo-btn", undoPick);
   on("#copy-teams-btn", copyTeamsText);
 
