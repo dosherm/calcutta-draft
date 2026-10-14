@@ -23,6 +23,26 @@ const byName = Object.fromEntries(PLAYERS.map(p => [p.name, p]));
 // Agreed in advance: this player goes first overall to whoever wins the coin toss
 const FIRST_PICK = PLAYERS.find(p => p.firstPick);
 
+// Tiers: the field split into quarters by Handicap Index (A = lowest quarter).
+// Each team takes exactly TEAM_SIZE / 4 players from every tier, captains included.
+const TIERS = ["A", "B", "C", "D"];
+const PER_TIER = TEAM_SIZE / TIERS.length;
+const tierOf = {};
+[...PLAYERS]
+  .sort((a, b) => (a.hi ?? 99) - (b.hi ?? 99) || a.name.localeCompare(b.name))
+  .forEach((p, i) => { tierOf[p.name] = TIERS[Math.floor(i * TIERS.length / PLAYERS.length)]; });
+const tierPlayers = t => PLAYERS.filter(p => tierOf[p.name] === t);
+
+function tierRange(t) {
+  const hs = tierPlayers(t).map(p => p.hi).filter(h => h != null);
+  return `HI ${fmtHi(Math.min(...hs))}–${fmtHi(Math.max(...hs))}`;
+}
+
+function tierBadge(p) {
+  const t = tierOf[p.name];
+  return `<span class="tier-badge tier-${t}">${t}</span>`;
+}
+
 function defaultState() {
   return {
     teamNames: CAPTAINS.map((c, t) => c ? `Team ${c.name.split(" ").slice(-1)[0]}` : `Team ${t + 1}`),
@@ -55,6 +75,7 @@ let state = loadState();
 let activeView = "draft";
 let playerSort = "hi";
 let poolSort = "hi";
+let poolTier = "all";
 
 function saveState() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
@@ -156,6 +177,10 @@ function draftPool() {
   return PLAYERS.filter(p => !isDrafted(p.name));
 }
 
+const tierCount = (team, t) => teamRoster(team).filter(p => tierOf[p.name] === t).length;
+const tierOpen = (team, t) => tierCount(team, t) < PER_TIER;
+const canPick = (team, name) => team !== null && !isDrafted(name) && tierOpen(team, tierOf[name]);
+
 // ---- My List: a private ranked want list. Picked players drop off the view
 // (they stay stored, so undoing a pick puts them back in their old spot). ----
 
@@ -207,7 +232,7 @@ function onTheClock() {
 
 function makePick(name) {
   const team = onTheClock();
-  if (team === null || isDrafted(name)) return;
+  if (!canPick(team, name)) return;
   state.draft.picks.push({ team, name });
   saveState();
   render();
@@ -226,18 +251,31 @@ function draftedLabel(p) {
 
 // ---- Draft view ----
 
+const shortName = t => state.teamNames[t].replace(/^Team /, "");
+
+// Tier preview for the setup screen: who is in each tier
+function tierPreview() {
+  return TIERS.map(t => `
+    <div class="tier-preview">
+      <div class="tier-head">${tierBadge(tierPlayers(t)[0])} Tier ${t} <span class="tm-meta">${tierRange(t)}</span></div>
+      <div class="tm-meta">${tierPlayers(t).sort(sorters.hi).map(p => p.name + (isCaptain(p.name) ? " (C)" : "")).join(", ")}</div>
+    </div>`).join("");
+}
+
 function renderSetup() {
   const d = state.draft;
   const name = t => state.teamNames[t];
   const seg = (val, label) => `<button class="${d.format === val ? "on" : ""}" data-format="${val}">${label}</button>`;
   const firstBtn = t => `<button class="${d.first === t ? "on" : ""}" data-first="${t}">${name(t)}</button>`;
-  const order = pickSequence().slice(0, 8).map(t => name(t).replace(/^Team /, "")).join(", ");
+  const order = pickSequence().slice(0, 8).map(shortName).join(", ");
 
   return `
     <div class="setup-intro">
       <h2>Set Up the Draft</h2>
-      <p>${CAPTAINS.map(cp => cp ? cp.name : "?").join(" and ")} each draft ${PICKS_PER_TEAM} players for a team of ${TEAM_SIZE}.
-      The other ${PLAYERS.length - 2} players are in the draft pool.${FIRST_PICK ? ` <b>${FIRST_PICK.name}</b> goes automatically to whoever wins the coin toss as pick 1.` : ""}</p>
+      <p>${CAPTAINS.map(cp => cp ? cp.name : "?").join(" and ")} each draft ${PICKS_PER_TEAM} players for a team of ${TEAM_SIZE}:
+      <b>${PER_TIER} A's, ${PER_TIER} B's, ${PER_TIER} C's and ${PER_TIER} D's</b>. Tiers are quarters of the field by Handicap Index,
+      and captains count toward their own tier. Pick from any tier in any order. Once a team has ${PER_TIER} from a tier, that tier is closed to them.
+      ${FIRST_PICK ? ` <b>${FIRST_PICK.name}</b> goes automatically to whoever wins the coin toss as pick 1.` : ""}</p>
     </div>
     <div class="ctrl-row">
       <label>Coin toss winner</label>
@@ -249,8 +287,38 @@ function renderSetup() {
       <span class="seg">${seg("snake", "Snake (1-2-2…)")}${seg("alternate", "Alternate (1-1…)")}</span>
       <div class="tm-meta" style="width:100%">Order: ${order}…</div>
     </div>
+    <div class="section-label">The tiers</div>
+    ${tierPreview()}
     <button id="start-btn" class="big-btn start">Start Draft &#8594;</button>
   `;
+}
+
+// Each team's progress through the tiers: one pip per spot, filled as players land
+function tierBoard(onClock) {
+  const head = `<div class="tb-cell"></div>${TIERS.map(t => `<div class="tb-cell tb-head">${t}</div>`).join("")}`;
+  const rows = [0, 1].map(team => {
+    const cells = TIERS.map(t => {
+      const n = tierCount(team, t);
+      const pips = Array.from({ length: PER_TIER }, (_, i) => `<i class="${i < n ? "on" : ""}"></i>`).join("");
+      return `<div class="tb-cell${n >= PER_TIER ? " full" : ""}"><span class="pips t${team}">${pips}</span></div>`;
+    }).join("");
+    return `<div class="tb-cell tb-team${team === onClock ? " clock" : ""}">${shortName(team)}</div>${cells}`;
+  }).join("");
+  return `<div class="tier-board">${head}${rows}</div>`;
+}
+
+function poolCard(p, team) {
+  const ok = canPick(team, p.name);
+  return `
+    <div class="player-card tier-card tier-${tierOf[p.name]}${ok ? "" : " locked"}">
+      ${starBtn(p)}
+      <div class="pinfo">
+        <div class="pname">${tierBadge(p)} ${p.name}${myListRank(p.name)}</div>
+        <div class="pmeta">${playerMeta(p)}</div>
+      </div>
+      ${ok ? `<button class="pick-btn" data-pick="${p.name}">Draft</button>`
+           : `<span class="full-tag">${tierOf[p.name]} full</span>`}
+    </div>`;
 }
 
 function renderDraft() {
@@ -265,22 +333,28 @@ function renderDraft() {
   if (team === null) {
     return `<div class="draft-complete">
       <h2>Draft Complete</h2>
-      <p>Both teams have ${TEAM_SIZE} players. See the Teams tab.</p>
-    </div>${undoBtn}`;
+      <p>Both teams have ${TEAM_SIZE} players, ${PER_TIER} from each tier. See the Teams tab.</p>
+    </div>${tierBoard(null)}${undoBtn}`;
   }
 
-  const pool = draftPool().sort(sorters[poolSort]);
   const seq = pickSequence();
-  const nextUp = seq.slice(picksDone + 1, picksDone + 4).map(t => state.teamNames[t].replace(/^Team /, "")).join(", ");
-  const cards = pool.map(p => `
-    <div class="player-card">
-      ${starBtn(p)}
-      <div class="pinfo">
-        <div class="pname">${p.name}${myListRank(p.name)}</div>
-        <div class="pmeta">${playerMeta(p)}</div>
-      </div>
-      <button class="pick-btn" data-pick="${p.name}">Draft</button>
-    </div>`).join("");
+  const nextUp = seq.slice(picksDone + 1, picksDone + 4).map(shortName).join(", ");
+  const needs = TIERS.filter(t => tierOpen(team, t))
+    .map(t => `${PER_TIER - tierCount(team, t)} ${t}`).join(" &middot; ");
+
+  const shown = poolTier === "all" ? TIERS : [poolTier];
+  const sections = shown.map(t => {
+    const pool = draftPool().filter(p => tierOf[p.name] === t).sort(sorters[poolSort]);
+    if (!pool.length) return poolTier === "all" ? "" : `<p class="tm-meta">Tier ${t} is all drafted.</p>`;
+    const need = [0, 1].map(tm => `${shortName(tm)} ${PER_TIER - tierCount(tm, t)}`).join(", ");
+    const closed = !tierOpen(team, t)
+      ? `<div class="tier-closed">${state.teamNames[team]} has its ${PER_TIER} ${t}'s. The rest of Tier ${t} goes to ${state.teamNames[1 - team]}.</div>` : "";
+    return `
+      <div class="section-label tier-label">${tierBadge(pool[0])} Tier ${t} &middot; ${pool.length} left
+        <span class="tier-need">still needed: ${need}</span></div>
+      ${closed}
+      ${pool.map(p => poolCard(p, team)).join("")}`;
+  }).join("");
 
   const mine = myListAvailable();
   const myStrip = mine.length ? `
@@ -288,23 +362,28 @@ function renderDraft() {
       <div class="mylist-head">My List &middot; next up</div>
       ${mine.slice(0, 3).map((n, i) => `
         <div class="mylist-row">
-          <span><span class="mylist-num">${i + 1}</span>${n} <span class="tm-meta">Youche ${fmtCrs(byName[n].courseHcp)}</span></span>
-          <button class="pick-btn small" data-pick="${n}">Draft</button>
+          <span><span class="mylist-num">${i + 1}</span>${tierBadge(byName[n])} ${n} <span class="tm-meta">Youche ${fmtCrs(byName[n].courseHcp)}</span></span>
+          ${canPick(team, n) ? `<button class="pick-btn small" data-pick="${n}">Draft</button>`
+                             : `<span class="full-tag">${tierOf[n]} full</span>`}
         </div>`).join("")}
       ${mine.length > 3 ? `<div class="tm-meta">+${mine.length - 3} more on My List</div>` : ""}
     </div>` : "";
+
+  const tierSeg = [["all", "All"], ...TIERS.map(t => [t, t])].map(([v, l]) =>
+    `<button class="${poolTier === v ? "on" : ""}" data-pooltier="${v}">${l}</button>`).join("");
 
   return `
     <div class="draft-status">
       <div class="pick-label">Pick ${picksDone + 1} of ${TOTAL_PICKS}</div>
       <div class="on-clock">${state.teamNames[team]}</div>
-      <div class="on-clock-sub">${CAPTAINS[team] ? CAPTAINS[team].name : ""} is on the clock &middot; ${teamRoster(team).length} of ${TEAM_SIZE} on the team${nextUp ? ` &middot; then ${nextUp}` : ""}</div>
+      <div class="on-clock-sub">${CAPTAINS[team] ? CAPTAINS[team].name : ""} is on the clock &middot; needs ${needs}${nextUp ? ` &middot; then ${nextUp}` : ""}</div>
     </div>
+    ${tierBoard(team)}
     ${undoBtn}
     ${myStrip}
+    <div class="ctrl-row"><label>Tier</label><span class="seg">${tierSeg}</span></div>
     <div class="ctrl-row"><label>Sort by</label>${sortSeg(poolSort, "poolsort")}</div>
-    <div class="section-label">Available (${pool.length}) &middot; tap &#9734; to add to My List</div>
-    ${cards || "<p>No players left in the pool.</p>"}
+    ${sections || "<p>No players left in the pool.</p>"}
   `;
 }
 
@@ -319,7 +398,7 @@ function renderMyList() {
       <div class="player-card mylist-card">
         <span class="mylist-num big">${i + 1}</span>
         <div class="pinfo">
-          <div class="pname">${n}</div>
+          <div class="pname">${tierBadge(p)} ${n}</div>
           <div class="pmeta">${playerMeta(p)}</div>
         </div>
         <span class="order-ctrls">
@@ -334,7 +413,7 @@ function renderMyList() {
   const addRows = rest.map(p => `
     <div class="player-card">
       <div class="pinfo">
-        <div class="pname">${p.name}</div>
+        <div class="pname">${tierBadge(p)} ${p.name}</div>
         <div class="pmeta">${playerMeta(p)}</div>
       </div>
       <button class="pick-btn add-btn" data-star="${p.name}">+ Add</button>
@@ -367,24 +446,28 @@ function renderTeams() {
   const cards = [0, 1].map(t => {
     const roster = teamRoster(t);
     const s = teamStats(roster);
-    const rows = roster.map(p => {
-      const pickNo = state.draft.picks.findIndex(x => x.name === p.name);
-      const label = isCaptain(p.name) ? "C" : `#${pickNo + 1}`;
-      return `
-        <div class="tm-row">
-          <div>
-            <div class="tm-name"><span class="cup-rank">${label}</span>${p.name}</div>
-            <div class="tm-meta"><b class="yhcp">Youche ${fmtCrs(p.courseHcp)}</b> &middot; L10 ${fmtNet(p.netL10)} &middot; 2yr ${fmtNet(p.net2yr)} &middot; ${p.form || ""}${p.sharp ? " &#9889;" : ""}</div>
-          </div>
-        </div>`;
+    const rows = TIERS.map(tier => {
+      const inTier = roster.filter(p => tierOf[p.name] === tier);
+      const filled = inTier.map(p => {
+        const pickNo = state.draft.picks.findIndex(x => x.name === p.name);
+        const label = isCaptain(p.name) ? "C" : `#${pickNo + 1}`;
+        return `
+          <div class="tm-row">
+            <div>
+              <div class="tm-name">${tierBadge(p)} <span class="cup-rank">${label}</span>${p.name}</div>
+              <div class="tm-meta"><b class="yhcp">Youche ${fmtCrs(p.courseHcp)}</b> &middot; L10 ${fmtNet(p.netL10)} &middot; 2yr ${fmtNet(p.net2yr)} &middot; ${p.form || ""}${p.sharp ? " &#9889;" : ""}</div>
+            </div>
+          </div>`;
+      });
+      const open = Array.from({ length: PER_TIER - inTier.length }, () => `
+          <div class="tm-row open-slot"><div class="tm-name"><span class="tier-badge tier-${tier}">${tier}</span> <span class="tm-meta">open ${tier} spot</span></div></div>`);
+      return filled.join("") + open.join("");
     }).join("");
-    const empty = TEAM_SIZE - roster.length;
     return `
       <div class="cup-team t${t}">
         <input class="team-name" data-team="${t}" value="${state.teamNames[t].replace(/"/g, "&quot;")}">
         <div class="team-totals">${s.n} of ${TEAM_SIZE} &middot; total Youche hcp <b>${s.totCrs}</b> &middot; avg <b>${fmt1(s.avgCrs)}</b></div>
         ${rows}
-        ${empty > 0 ? `<div class="tm-meta" style="padding-top:6px">${empty} spot${empty > 1 ? "s" : ""} to fill</div>` : ""}
       </div>`;
   }).join("");
 
@@ -399,8 +482,8 @@ function teamsAsText() {
   const lines = ["Youche Cup — Teams", ""];
   [0, 1].forEach(t => {
     lines.push(state.teamNames[t]);
-    teamRoster(t).forEach(p =>
-      lines.push(`  ${p.name}${isCaptain(p.name) ? " (C)" : ""} (Youche ${fmtCrs(p.courseHcp)})`));
+    TIERS.forEach(tier => teamRoster(t).filter(p => tierOf[p.name] === tier).forEach(p =>
+      lines.push(`  ${tier}  ${p.name}${isCaptain(p.name) ? " (C)" : ""} (Youche ${fmtCrs(p.courseHcp)})`)));
     lines.push("");
   });
   return lines.join("\n").trim();
@@ -437,7 +520,7 @@ function renderPlayers() {
     <div class="player-card${isDrafted(p.name) && !isCaptain(p.name) ? " drafted" : ""}">
       ${isDrafted(p.name) ? "" : starBtn(p)}
       <div class="pinfo">
-        <div class="pname">${p.name}${capTag(p)}${draftedLabel(p)}${myListRank(p.name)}</div>
+        <div class="pname">${tierBadge(p)} ${p.name}${capTag(p)}${draftedLabel(p)}${myListRank(p.name)}</div>
         <div class="pmeta">${playerMeta(p)}</div>
       </div>
     </div>`).join("");
@@ -450,6 +533,12 @@ function renderPlayers() {
 // ---- Stats Guide ----
 
 const GUIDE_STATS = [
+  {
+    term: "A / B / C / D", sub: "Draft Tier",
+    def: "The field split into quarters by Handicap Index: A is the lowest quarter, D the highest. Each team ends with 3 from every tier, captains included.",
+    good: "Spend early picks where the gap between the best and the rest of a tier is biggest.",
+    bad: "Once a team has its 3 from a tier, the rest of that tier goes to the other team."
+  },
   {
     term: "HI", sub: "Handicap Index",
     def: "The player's current official USGA/WHS Handicap Index.",
@@ -546,6 +635,7 @@ function render() {
   on("[data-mymove]", b => moveMyList(b.dataset.name, +b.dataset.mymove));
   on("[data-sort]", b => { playerSort = b.dataset.sort; render(); });
   on("[data-poolsort]", b => { poolSort = b.dataset.poolsort; render(); });
+  on("[data-pooltier]", b => { poolTier = b.dataset.pooltier; render(); });
   on("[data-first]", b => { state.draft.first = +b.dataset.first; saveState(); render(); });
   on("[data-format]", b => { state.draft.format = b.dataset.format; saveState(); render(); });
   on("#coin-btn", () => {

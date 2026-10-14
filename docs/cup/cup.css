@@ -149,3 +149,52 @@
 .pick-btn.small { padding: 6px 12px; font-size: 0.8rem; }
 .add-btn { background: #fff; color: var(--navy); border: 1px solid var(--navy); }
 .mylist-card .order-ctrls { display: flex; gap: 4px; margin-left: 8px; }
+
+/* Tiers */
+.tier-badge {
+  display: inline-block; min-width: 18px; text-align: center; border-radius: 4px;
+  font-size: 0.7rem; font-weight: 800; padding: 1px 4px; color: #fff; vertical-align: middle;
+}
+.tier-badge.tier-A { background: var(--green); }
+.tier-badge.tier-B { background: var(--navy); }
+.tier-badge.tier-C { background: #a16207; }
+.tier-badge.tier-D { background: var(--red); }
+.player-card.tier-card.tier-A { border-left-color: var(--green); }
+.player-card.tier-card.tier-B { border-left-color: var(--navy); }
+.player-card.tier-card.tier-C { border-left-color: #a16207; }
+.player-card.tier-card.tier-D { border-left-color: var(--red); }
+.player-card.locked { opacity: 0.5; }
+.full-tag {
+  flex-shrink: 0; margin-left: 8px; font-size: 0.72rem; font-weight: 800; color: var(--muted);
+  border: 1px dashed var(--border); border-radius: 8px; padding: 6px 8px;
+}
+.tier-label { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 14px; }
+.tier-need { font-weight: 600; text-transform: none; letter-spacing: 0; margin-left: auto; }
+.tier-closed {
+  background: #f1f2f5; border-radius: 10px; padding: 8px 12px; margin-bottom: 8px;
+  font-size: 0.8rem; color: var(--muted); font-weight: 600;
+}
+
+.tier-board {
+  display: grid; grid-template-columns: minmax(70px, 1.4fr) repeat(4, 1fr); gap: 4px 6px;
+  align-items: center; background: var(--card); border-radius: 12px; padding: 10px 12px;
+  margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.tb-cell { text-align: center; font-size: 0.8rem; }
+.tb-head { font-weight: 800; color: var(--navy); }
+.tb-team { text-align: left; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tb-team.clock { color: var(--navy); }
+.tb-team.clock::before { content: "\25B6 "; color: var(--gold); font-size: 0.7rem; }
+.pips { display: inline-flex; gap: 3px; }
+.pips i {
+  width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #c7cbd3; display: inline-block;
+}
+.pips.t0 i.on { background: var(--navy); border-color: var(--navy); }
+.pips.t1 i.on { background: #b42318; border-color: #b42318; }
+
+.tier-preview {
+  background: var(--card); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.tier-head { font-weight: 800; color: var(--navy); margin-bottom: 2px; }
+.tm-row.open-slot { border-top-style: dashed; }
