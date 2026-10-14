@@ -20,8 +20,6 @@ function proj(p) {
 const CAPTAINS = [0, 1].map(t => PLAYERS.find(p => p.captain === t));
 const isCaptain = name => CAPTAINS.some(c => c && c.name === name);
 const byName = Object.fromEntries(PLAYERS.map(p => [p.name, p]));
-// Agreed in advance: this player goes first overall to whoever wins the coin toss
-const FIRST_PICK = PLAYERS.find(p => p.firstPick);
 
 // Tiers: the field split into quarters by Handicap Index (A = lowest quarter).
 // Each team takes exactly TEAM_SIZE / 4 players from every tier, captains included.
@@ -274,8 +272,7 @@ function renderSetup() {
       <h2>Set Up the Draft</h2>
       <p>${CAPTAINS.map(cp => cp ? cp.name : "?").join(" and ")} each draft ${PICKS_PER_TEAM} players for a team of ${TEAM_SIZE}:
       <b>${PER_TIER} A's, ${PER_TIER} B's, ${PER_TIER} C's and ${PER_TIER} D's</b>. Tiers are quarters of the field by Handicap Index,
-      and captains count toward their own tier. Pick from any tier in any order. Once a team has ${PER_TIER} from a tier, that tier is closed to them.
-      ${FIRST_PICK ? ` <b>${FIRST_PICK.name}</b> goes automatically to whoever wins the coin toss as pick 1.` : ""}</p>
+      and captains count toward their own tier. Pick from any tier in any order. Once a team has ${PER_TIER} from a tier, that tier is closed to them.</p>
     </div>
     <div class="ctrl-row">
       <label>Coin toss winner</label>
@@ -641,13 +638,10 @@ function render() {
   on("#coin-btn", () => {
     state.draft.first = Math.random() < 0.5 ? 0 : 1;
     saveState(); render();
-    alert(`${state.teamNames[state.draft.first]} wins the toss${FIRST_PICK ? ` and gets ${FIRST_PICK.name}` : " and picks first"}.`);
+    alert(`${state.teamNames[state.draft.first]} wins the toss and picks first.`);
   });
   on("#start-btn", () => {
     state.draft.started = true;
-    if (FIRST_PICK && !state.draft.picks.length) {
-      state.draft.picks.push({ team: state.draft.first, name: FIRST_PICK.name });
-    }
     saveState(); render();
   });
   on("#undo-btn", undoPick);

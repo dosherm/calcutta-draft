@@ -1,5 +1,5 @@
 [
-  {"name": "Kevin Cunningham",   "hi": 0.0, "firstPick": true},
+  {"name": "Kevin Cunningham",   "hi": 0.0},
   {"name": "Chris Myres",        "hi": 3.2, "captain": 0},
   {"name": "Richard Amodeo",     "hi": 6.7, "alias": "Rick Amodeo"},
   {"name": "Dan Sherman",        "hi": 7.2, "captain": 1},

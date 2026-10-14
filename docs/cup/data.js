@@ -14,8 +14,7 @@ const PLAYERS = [
     "sharp": false,
     "volatility": null,
     "basis": "none",
-    "asof": null,
-    "firstPick": true
+    "asof": null
   },
   {
     "name": "Chris Myres",
