@@ -524,8 +524,8 @@ function renderGuide() {
     <div class="guide-intro">
       <h2>Stats Guide</h2>
       <p>Same player evaluation as the Calcutta, without flights. The main number on each card is the player's
-      handicap at Youche from the white tees (Course Rating 70.4, Slope 127, Par 71), worked out from their official
-      Cup Handicap Index (HI). Net-to-par figures use that same handicap.</p>
+      handicap at Youche from the white tees (Course Rating 70.4, Slope 127, Par 71), worked out from their current
+      GHIN Handicap Index (HI). Net-to-par figures use that same handicap.</p>
     </div>
     <div class="guide-list">${cards}</div>`;
 }

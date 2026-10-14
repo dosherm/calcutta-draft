@@ -11,8 +11,9 @@ L10 / 2yr / best, Form, SHARP) — without flights.
                                    # players first (needs .env GHIN creds and
                                    # network access to api2.ghin.com)
 
-youche-cup-roster.json is the final field with each player's official event
-Handicap Index; every evaluation is re-based on that index.
+youche-cup-roster.json is the final field with each player's Handicap Index
+(current GHIN as of the last refresh; Kevin Cunningham is a pro, fixed at 0.0);
+every evaluation is re-based on that index.
 
 Sources, in priority order:
   1. youche-cup-ghin.json      (written by --refresh: full 2yr history, current)
