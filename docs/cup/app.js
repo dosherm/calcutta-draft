@@ -52,6 +52,7 @@ function defaultState() {
     },
     // your own ranked want list (names, best first), seeded from data.js "myList"
     myList: PLAYERS.filter(p => p.myList).sort((a, b) => a.myList - b.myList).map(p => p.name),
+    pairings: null,        // groups[g][team][slot] = player name, set on the Pairings tab
   };
 }
 
@@ -486,9 +487,8 @@ function teamsAsText() {
   return lines.join("\n").trim();
 }
 
-function copyTeamsText() {
-  const text = teamsAsText();
-  const btn = document.getElementById("copy-teams-btn");
+function copyText(text, btnId) {
+  const btn = document.getElementById(btnId);
   const flash = label => {
     if (!btn) return;
     const original = btn.textContent;
@@ -507,6 +507,149 @@ function copyTeamsText() {
     try { document.execCommand("copy"); flash("Copied!"); } catch (e) { flash("Copy failed"); }
     document.body.removeChild(ta);
   }
+}
+
+// ---- Pairings: 6 groups, each one pair from each team. In every group the
+// front 9 is better ball, the back 9 is Chapman, and the players in slot 1
+// and slot 2 also play 18-hole singles against each other. ----
+
+const GROUPS = TEAM_SIZE / 2;
+// Handicap allowances (USGA recommendations for match play)
+const BETTER_BALL_PCT = 0.9;              // four-ball: 90% of course handicap, off the low ball
+const CHAPMAN_LOW = 0.6, CHAPMAN_HIGH = 0.4;  // Chapman pair: 60% low + 40% high
+// Nine-hole matches get half the 18-hole strokes.
+
+const emptyGroups = () => Array.from({ length: GROUPS }, () => [["", ""], ["", ""]]);
+
+// groups[g][team][slot] = player name ("" when open). Names no longer on that team are ignored.
+function pairingGroups() {
+  const groups = state.pairings && state.pairings.length === GROUPS ? state.pairings : emptyGroups();
+  return groups.map(g => [0, 1].map(t => g[t].map(n => n && teamRoster(t).some(p => p.name === n) ? n : "")));
+}
+
+function setPairing(g, team, slot, name) {
+  const groups = pairingGroups();
+  // A player sits in one place only: clear him from wherever he was
+  if (name) groups.forEach(gr => gr[team].forEach((n, s) => { if (n === name) gr[team][s] = ""; }));
+  groups[g][team][slot] = name;
+  state.pairings = groups;
+  saveState();
+  render();
+}
+
+const crs = name => byName[name].courseHcp ?? 0;
+const half = n => Math.round(n / 2);
+
+// Strokes each player gets in front-9 better ball, off the lowest of the four
+function betterBallStrokes(four) {
+  const ph = four.map(n => crs(n) * BETTER_BALL_PCT);
+  const low = Math.min(...ph);
+  return four.map((n, i) => ({ name: n, strokes: half(ph[i] - low) }));
+}
+
+const chapmanHcp = pair => {
+  const [lo, hi] = pair.map(crs).sort((a, b) => a - b);
+  return CHAPMAN_LOW * lo + CHAPMAN_HIGH * hi;
+};
+
+// Returns [team getting strokes or null, strokes]
+function strokeGap(a, b, nine) {
+  const d = nine ? half(Math.abs(a - b)) : Math.round(Math.abs(a - b));
+  return d === 0 ? [null, 0] : [a > b ? 0 : 1, d];
+}
+
+// Last name, with a first initial when two players share it (the Donaghues)
+const lastName = n => {
+  const last = n.split(" ").slice(-1)[0];
+  return PLAYERS.filter(p => p.name.endsWith(" " + last)).length > 1 ? `${n[0]}. ${last}` : last;
+};
+const getsLine = (who, d) => who === null ? "Even, no strokes" : `${who} gets ${d}`;
+
+function groupMatches(group) {
+  const full = group.every(pair => pair.every(Boolean));
+  const out = { full };
+  if (!full) return out;
+  const four = [...group[0], ...group[1]];
+  out.betterBall = betterBallStrokes(four);
+  const [ct, cd] = strokeGap(chapmanHcp(group[0]), chapmanHcp(group[1]), true);
+  out.chapman = { team: ct, strokes: cd, hcp: group.map(chapmanHcp) };
+  out.singles = [0, 1].map(s => {
+    const [a, b] = [group[0][s], group[1][s]];
+    const [t, d] = strokeGap(crs(a), crs(b), false);
+    return { a, b, who: t === null ? null : [a, b][t], strokes: d };
+  });
+  return out;
+}
+
+function playerSelect(g, team, slot, value) {
+  const groups = pairingGroups();
+  const placed = new Set(groups.flatMap(gr => gr[team]).filter(Boolean));
+  const opts = teamRoster(team).map(p => {
+    const taken = placed.has(p.name) && p.name !== value;
+    return `<option value="${p.name}"${p.name === value ? " selected" : ""}>${tierOf[p.name]} · ${p.name} (${fmtCrs(p.courseHcp)})${taken ? " ✓" : ""}</option>`;
+  }).join("");
+  return `<select class="pair-sel t${team}" data-g="${g}" data-team="${team}" data-slot="${slot}">
+    <option value="">${state.teamNames[team].replace(/^Team /, "")} player ${slot + 1}…</option>${opts}</select>`;
+}
+
+function renderPairings() {
+  const groups = pairingGroups();
+  const shortT = t => state.teamNames[t].replace(/^Team /, "");
+  const unplaced = [0, 1].map(t => teamRoster(t).filter(p => !groups.some(g => g[t].includes(p.name))).map(p => p.name));
+
+  const cards = groups.map((group, g) => {
+    const m = groupMatches(group);
+    const results = m.full ? `
+      <div class="match"><div class="match-head">Front 9 &middot; Better Ball <span class="tm-meta">${Math.round(BETTER_BALL_PCT * 100)}%, off the low ball</span></div>
+        <div class="match-body">${m.betterBall.map(x => `${lastName(x.name)} <b>${x.strokes}</b>`).join(" &middot; ")}</div></div>
+      <div class="match"><div class="match-head">Back 9 &middot; Chapman <span class="tm-meta">60% low + 40% high</span></div>
+        <div class="match-body">${shortT(0)} ${fmt1(m.chapman.hcp[0])} vs ${shortT(1)} ${fmt1(m.chapman.hcp[1])} &middot;
+        <b>${getsLine(m.chapman.team === null ? null : shortT(m.chapman.team), m.chapman.strokes)}</b></div></div>
+      <div class="match"><div class="match-head">18 &middot; Singles <span class="tm-meta">full difference</span></div>
+        ${m.singles.map(s => `<div class="match-body">${lastName(s.a)} vs ${lastName(s.b)} &middot; <b>${getsLine(s.who && lastName(s.who), s.strokes)}</b></div>`).join("")}</div>`
+      : `<div class="tm-meta" style="padding:6px 0">Pick both players for each team to see the strokes.</div>`;
+    return `
+      <div class="pair-group">
+        <div class="pair-title">Group ${g + 1}</div>
+        <div class="pair-row"><span class="slot-tag">1</span>${playerSelect(g, 0, 0, group[0][0])}<span class="vs">vs</span>${playerSelect(g, 1, 0, group[1][0])}</div>
+        <div class="pair-row"><span class="slot-tag">2</span>${playerSelect(g, 0, 1, group[0][1])}<span class="vs">vs</span>${playerSelect(g, 1, 1, group[1][1])}</div>
+        ${results}
+      </div>`;
+  }).join("");
+
+  const waiting = [0, 1].map(t => unplaced[t].length
+    ? `<div class="tm-meta"><b>${state.teamNames[t]}</b> not placed: ${unplaced[t].join(", ")}</div>` : "").join("");
+
+  return `
+    <div class="guide-intro">
+      <h2>Pairings</h2>
+      <p>Each captain splits his team into ${GROUPS} pairs, and each group is one pair from each team. Partners stay together all day:
+      front 9 better ball, back 9 Chapman, and the players on the same row play 18-hole singles against each other.
+      Strokes come from each player's Youche handicap; nine-hole matches get half.</p>
+    </div>
+    <button id="copy-pairings-btn" class="copy-teams-btn">&#128203; Copy Pairings as Text</button>
+    ${waiting ? `<div class="notice">${waiting}</div>` : ""}
+    ${cards}
+    <button id="clear-pairings-btn" class="undo-btn">Clear pairings</button>`;
+}
+
+function pairingsAsText() {
+  const groups = pairingGroups();
+  const shortT = t => state.teamNames[t].replace(/^Team /, "");
+  const lines = ["Youche Cup — Pairings", ""];
+  groups.forEach((group, g) => {
+    lines.push(`Group ${g + 1}`);
+    lines.push(`  ${shortT(0)}: ${group[0].map(n => n || "TBD").join(" & ")}`);
+    lines.push(`  ${shortT(1)}: ${group[1].map(n => n || "TBD").join(" & ")}`);
+    const m = groupMatches(group);
+    if (m.full) {
+      lines.push(`  Front 9 better ball: ${m.betterBall.map(x => `${lastName(x.name)} ${x.strokes}`).join(", ")}`);
+      lines.push(`  Back 9 Chapman: ${getsLine(m.chapman.team === null ? null : shortT(m.chapman.team), m.chapman.strokes)}`);
+      m.singles.forEach(s => lines.push(`  Singles: ${s.a} vs ${s.b}, ${getsLine(s.who, s.strokes)}`));
+    }
+    lines.push("");
+  });
+  return lines.join("\n").trim();
 }
 
 // ---- Players view ----
@@ -623,6 +766,7 @@ function render() {
   if (activeView === "draft") app.innerHTML = renderDraft();
   else if (activeView === "mylist") app.innerHTML = renderMyList();
   else if (activeView === "teams") app.innerHTML = renderTeams();
+  else if (activeView === "pairings") app.innerHTML = renderPairings();
   else if (activeView === "players") app.innerHTML = renderPlayers();
   else app.innerHTML = renderGuide();
 
@@ -645,7 +789,14 @@ function render() {
     saveState(); render();
   });
   on("#undo-btn", undoPick);
-  on("#copy-teams-btn", copyTeamsText);
+  on("#copy-teams-btn", () => copyText(teamsAsText(), "copy-teams-btn"));
+  on("#copy-pairings-btn", () => copyText(pairingsAsText(), "copy-pairings-btn"));
+  on("#clear-pairings-btn", () => {
+    if (!confirm("Clear all pairings?")) return;
+    state.pairings = null; saveState(); render();
+  });
+  app.querySelectorAll("select.pair-sel").forEach(sel =>
+    sel.addEventListener("change", () => setPairing(+sel.dataset.g, +sel.dataset.team, +sel.dataset.slot, sel.value)));
 
   app.querySelectorAll("input.team-name").forEach(inp =>
     inp.addEventListener("change", () => {
@@ -664,8 +815,9 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
 });
 
 document.getElementById("reset-btn").addEventListener("click", () => {
-  if (!confirm("Reset the draft? This clears every pick (team names and My List are kept).")) return;
+  if (!confirm("Reset the draft? This clears every pick and the pairings (team names and My List are kept).")) return;
   state.draft = defaultState().draft;
+  state.pairings = null;
   saveState();
   render();
 });

@@ -198,3 +198,25 @@
 }
 .tier-head { font-weight: 800; color: var(--navy); margin-bottom: 2px; }
 .tm-row.open-slot { border-top-style: dashed; }
+
+/* Pairings */
+.pair-group {
+  background: var(--card); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.pair-title { font-weight: 800; color: var(--navy); margin-bottom: 6px; }
+.pair-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.pair-row .vs { font-size: 0.72rem; font-weight: 700; color: var(--muted); flex-shrink: 0; }
+.slot-tag {
+  flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; background: var(--bg);
+  font-size: 0.7rem; font-weight: 800; color: var(--muted); display: inline-flex; align-items: center; justify-content: center;
+}
+.pair-sel {
+  flex: 1; min-width: 0; font-size: 0.8rem; padding: 7px 6px; border-radius: 8px;
+  border: 1px solid var(--border); background: #fff; color: var(--text);
+}
+.pair-sel.t0 { border-left: 4px solid var(--navy); }
+.pair-sel.t1 { border-left: 4px solid #b42318; }
+.match { border-top: 1px solid var(--border); padding: 6px 0; }
+.match-head { font-size: 0.78rem; font-weight: 800; color: var(--navy); }
+.match-body { font-size: 0.82rem; }
