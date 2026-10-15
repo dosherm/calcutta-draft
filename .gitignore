@@ -1,3 +1,5 @@
 .env
 __pycache__/
 *.pyc
+youche-cup-phones.json
+.claude/
