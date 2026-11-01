@@ -14,7 +14,7 @@ It opens each Costco product page in `items.json` with headless Chromium and ale
 2. **Notifications:**
    - **GitHub issue (on by default):** opens an issue that @mentions you, so GitHub emails you. No setup needed, as long as you watch this repo (you do by default).
    - **Phone push (optional):** install the [ntfy](https://ntfy.sh) app and subscribe to a hard-to-guess topic, e.g. `costco-dan-8f3k2q`.
-     Then add it as the repo secret **`NTFY_TOPIC`** (Settings → Secrets and variables → Actions).
+     The workflow defaults to the topic `costco_wedges`; to use a different one, add the repo secret **`NTFY_TOPIC`** (Settings → Secrets and variables → Actions).
 3. **Test it:** Actions → "Costco stock check" → Run workflow → tick "Send a test notification".
 
 ## How it decides
