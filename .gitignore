@@ -3,3 +3,8 @@ __pycache__/
 *.pyc
 youche-cup-phones.json
 .claude/
+
+# stock-checker
+stock-checker/node_modules/
+stock-checker/results.json
+stock-checker/package-lock.json
