@@ -1,0 +1,120 @@
+name: Costco stock check
+
+on:
+  schedule:
+    # Every 30 minutes (UTC). GitHub may delay scheduled runs at busy times.
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+    inputs:
+      test_notification:
+        description: "Send a test notification even if nothing is in stock"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: costco-stock-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: stock-checker
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Cache Playwright browser
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ hashFiles('stock-checker/package.json') }}
+
+      - name: Install dependencies
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Check stock
+        run: node check.mjs
+
+      - name: Notify
+        uses: actions/github-script@v7
+        env:
+          # Phone push topic (ntfy app). A repo secret named NTFY_TOPIC overrides this.
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC || 'costco_wedges' }}
+          TEST_NOTIFICATION: ${{ inputs.test_notification }}
+        with:
+          script: |
+            const fs = require('fs');
+            const results = JSON.parse(fs.readFileSync('stock-checker/results.json', 'utf8'));
+            const { owner, repo } = context.repo;
+            const marker = (url) => `<!-- stock-checker:${url} -->`;
+
+            const openIssues = await github.paginate(github.rest.issues.listForRepo, {
+              owner, repo, state: 'open', per_page: 100,
+            });
+            const findIssue = (url) => openIssues.find((i) => (i.body || '').includes(marker(url)));
+
+            async function push(title, message, url) {
+              if (!process.env.NTFY_TOPIC) return;
+              const res = await fetch(`https://ntfy.sh/${process.env.NTFY_TOPIC}`, {
+                method: 'POST',
+                body: message,
+                headers: { Title: title, Click: url, Tags: 'shopping_cart', Priority: 'high' },
+              });
+              core.info(`ntfy: ${res.status}`);
+            }
+
+            if (process.env.TEST_NOTIFICATION === 'true') {
+              await push('Costco stock checker test', 'Notifications are working.', `https://github.com/${owner}/${repo}/actions`);
+              await github.rest.issues.create({
+                owner, repo,
+                title: 'Costco stock checker: test notification',
+                body: `@${owner} notifications are working. Close this issue.`,
+              });
+            }
+
+            const rows = [['Item', 'Status']];
+            for (const r of results) {
+              rows.push([`<a href="${r.url}">${r.name}</a>`, r.status]);
+              const existing = findIssue(r.url);
+
+              if (r.status === 'in_stock' && !existing) {
+                core.notice(`${r.name} is IN STOCK`);
+                await github.rest.issues.create({
+                  owner, repo,
+                  title: `In stock at Costco: ${r.name}`,
+                  body: [
+                    `@${owner} **${r.name}** looks to be back in stock.`,
+                    '',
+                    `**Buy it:** ${r.url}`,
+                    '',
+                    'This issue closes on its own if the item sells out again, so you\'ll be alerted on the next restock.',
+                    '',
+                    marker(r.url),
+                  ].join('\n'),
+                });
+                await push(`In stock: ${r.name}`, 'Back in stock at Costco. Tap to open.', r.url);
+              } else if (r.status === 'out_of_stock' && existing) {
+                await github.rest.issues.createComment({
+                  owner, repo, issue_number: existing.number,
+                  body: 'Sold out again. Closing; I\'ll open a new issue on the next restock.',
+                });
+                await github.rest.issues.update({
+                  owner, repo, issue_number: existing.number, state: 'closed', state_reason: 'completed',
+                });
+              } else if (['blocked', 'unknown', 'error'].includes(r.status)) {
+                core.warning(`${r.name}: status "${r.status}". Check the "Check stock" step log for the signals.`);
+              }
+            }
+            await core.summary.addHeading('Costco stock check').addTable(rows).write();
