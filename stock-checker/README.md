@@ -5,10 +5,10 @@ It opens each Costco product page in `items.json` with headless Chromium and ale
 
 ## Setup
 
-1. **Add your item(s)** to `items.json`:
+1. **Add your item(s)** to `items.json`. Add `"option": "Right"` for items with a size/hand/color choice:
    ```json
    [
-     { "name": "Kirkland Signature Widget", "url": "https://www.costco.com/....product.1234567.html" }
+     { "name": "Kirkland Signature Forged Wedge Set", "url": "https://www.costco.com/p/-/kirkland-signature-forged-wedge-set/4201019747", "option": "Right" }
    ]
    ```
 2. **Notifications:**

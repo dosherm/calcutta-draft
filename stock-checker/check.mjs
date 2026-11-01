@@ -61,16 +61,75 @@ async function checkItem(item) {
     await page.waitForTimeout(3_000);
 
     const httpStatus = response?.status() ?? 0;
+
+    // Variant items (e.g. Hand: Right / Left): inspect, then select, the option.
+    let option = null;
+    if (item.option) {
+      option = await page.evaluate(inspectOption, item.option);
+      if (option.found && !option.unavailable) {
+        await page
+          .getByText(item.option, { exact: true })
+          .first()
+          .click({ timeout: 5_000 })
+          .catch(() => {});
+        await page.waitForTimeout(2_000);
+      }
+    }
+
     const signals = await page.evaluate(collectSignals, {
       inStockSelector: item.inStockSelector ?? null,
       outOfStockText: item.outOfStockText ?? null,
     });
     signals.httpStatus = httpStatus;
+    if (option) signals.option = option;
 
     return { status: decide(signals), signals };
   } finally {
     await page.close();
   }
+}
+
+/**
+ * Runs inside the page. Finds a variant option (button/swatch whose text is
+ * exactly `label`) and reports whether it is marked unavailable (Costco
+ * crosses out sold-out options).
+ */
+function inspectOption(label) {
+  const want = label.trim().toLowerCase();
+  const candidates = [...document.querySelectorAll(
+    'button, [role="radio"], [role="button"], [role="option"], label, input[type="radio"], li, a',
+  )].filter((el) => {
+    const t = (el.innerText || el.value || el.getAttribute("aria-label") || "").trim().toLowerCase();
+    return t === want || t.startsWith(want + ",") || t.startsWith(want + " ");
+  });
+  const el = candidates[0];
+  if (!el) return { found: false };
+
+  // Look at the element, its input (if a label), and a couple of ancestors.
+  const related = [el, el.querySelector?.("input"), el.parentElement, el.parentElement?.parentElement]
+    .filter(Boolean);
+  const unavailRe = /disabled|unavailable|out-?of-?stock|\boos\b|sold-?out|strike|crossed|inactive/i;
+  const hints = [];
+  for (const r of related) {
+    if (r.disabled) hints.push("disabled");
+    if (r.getAttribute("aria-disabled") === "true") hints.push("aria-disabled");
+    const aria = r.getAttribute("aria-label") || "";
+    if (/unavailable|out of stock|sold out/i.test(aria)) hints.push(`aria-label:${aria}`);
+    const cls = typeof r.className === "string" ? r.className : "";
+    if (unavailRe.test(cls)) hints.push(`class:${cls.match(unavailRe)[0]}`);
+  }
+  // Strike-through graphic: only inside the option itself, so a crossed-out
+  // sibling option (e.g. "Left") can't mark this one unavailable.
+  if (el.querySelector?.("svg line, [class*='strike' i], [class*='cross' i], [class*='slash' i]")) {
+    hints.push("strike-graphic");
+  }
+  return {
+    found: true,
+    tag: el.tagName.toLowerCase(),
+    className: typeof el.className === "string" ? el.className.slice(0, 200) : "",
+    unavailable: hints.length > 0,
+    hints: [...new Set(hints)],
+  };
 }
 
 /** Runs inside the page. Gathers every hint we can find about availability. */
@@ -137,6 +196,9 @@ function decide(s) {
   if (s.httpStatus >= 400) return "unknown";
 
   if ("customSelectorFound" in s) return s.customSelectorFound ? "in_stock" : "out_of_stock";
+
+  // A crossed-out variant option is definitive.
+  if (s.option?.found && s.option.unavailable) return "out_of_stock";
 
   if (s.addToCart) {
     const oosLabel = /out of stock|sold out|unavailable/i.test(s.addToCart.label);
